@@ -1,0 +1,211 @@
+{% extends 'base.html' %}
+
+{% block title %}Class List – KSA{% endblock %}
+
+{% block extra_css %}
+<style>
+  .cl-page {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem;
+  }
+
+  .cl-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+  }
+
+  .cl-header h1 {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--blue-dark);
+  }
+
+  .cl-header p {
+    font-size: 13.5px;
+    color: var(--gray-muted);
+    margin-top: 2px;
+  }
+
+  .cl-add-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--blue-main);
+    color: #fff;
+    font-size: 13.5px;
+    font-weight: 500;
+    padding: 8px 18px;
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    transition: background 0.15s;
+  }
+  .cl-add-btn:hover { background: var(--blue-dark); }
+
+  .cl-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem;
+  }
+
+  /* Card is a div, not an <a>, to allow nested links */
+  .cl-card {
+    background: var(--white);
+    border: 1px solid var(--gray-border);
+    border-radius: var(--radius);
+    padding: 1.4rem 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: box-shadow 0.15s, border-color 0.15s;
+  }
+  .cl-card:hover {
+    box-shadow: 0 4px 16px rgba(12, 68, 124, 0.10);
+    border-color: var(--blue-light);
+  }
+
+  .cl-card-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: var(--radius-sm);
+    background: var(--blue-pale);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--blue-main);
+    font-size: 22px;
+  }
+
+  .cl-card-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--blue-dark);
+    margin-bottom: 2px;
+  }
+
+  .cl-card-meta {
+    font-size: 12.5px;
+    color: var(--gray-muted);
+  }
+
+  /* Action buttons inside card */
+  .cl-card-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    margin-top: 6px;
+    border-top: 0.5px solid var(--gray-border);
+    padding-top: 12px;
+  }
+
+  .cl-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: opacity 0.15s, background 0.15s;
+  }
+  .cl-action-btn:hover { opacity: 0.85; }
+  .cl-action-btn i { font-size: 16px; }
+
+  .cl-action-btn.students {
+    background: var(--blue-pale);
+    color: var(--blue-dark);
+    border: 0.5px solid var(--blue-light);
+  }
+
+  .cl-action-btn.attendance {
+    background: var(--green-bg);
+    color: var(--green-text);
+    border: 0.5px solid var(--green-border);
+  }
+
+  /* Empty state */
+  .cl-empty {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: var(--white);
+    border: 1px dashed var(--gray-border);
+    border-radius: var(--radius);
+  }
+  .cl-empty i {
+    font-size: 40px;
+    color: var(--blue-light);
+    margin-bottom: 12px;
+    display: block;
+  }
+  .cl-empty h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--gray-text);
+    margin-bottom: 6px;
+  }
+  .cl-empty p {
+    font-size: 13.5px;
+    color: var(--gray-muted);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="cl-page">
+
+  <div class="cl-header">
+    <div>
+      <h1>All Classes</h1>
+      <p>{{ classes|length }} class{{ classes|length|pluralize:"es" }} available</p>
+    </div>
+    <a href="#" class="cl-add-btn">
+      <i class="ti ti-plus"></i>
+      Add Class
+    </a>
+  </div>
+
+  {% if classes %}
+  <div class="cl-grid">
+    {% for class in classes %}
+    <div class="cl-card">
+
+      <div class="cl-card-icon">
+        <i class="ti ti-school"></i>
+      </div>
+
+      <div>
+        <div class="cl-card-name">{{ class.name }}</div>
+        <div class="cl-card-meta">
+          <i class="ti ti-users" style="font-size:12px; vertical-align:-1px;"></i>
+          {{ class.student_set.count }} student{{ class.student_set.count|pluralize }}
+        </div>
+      </div>
+
+      <div class="cl-card-actions">
+        <a href="{% url 'student_list' class_id=class.id %}" class="cl-action-btn students">
+          <i class="ti ti-users" aria-hidden="true"></i>
+          View Students
+        </a>
+        <a href="{% url 'take_attendance' class.id %}" class="cl-action-btn attendance">
+          <i class="ti ti-clipboard-check" aria-hidden="true"></i>
+          Take Attendance
+        </a>
+      </div>
+
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="cl-empty">
+    <i class="ti ti-folder-open"></i>
+    <h3>No classes yet</h3>
+    <p>Add a class to get started.</p>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

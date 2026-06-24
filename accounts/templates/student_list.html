@@ -1,0 +1,493 @@
+{% extends "base.html" %}
+{% block title %}{{ classroom.name }} — Student List{% endblock %}
+
+{% block extra_css %}
+<style>
+  .ksa-page {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 2.5rem 2rem;
+  }
+
+  .ksa-page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+  }
+
+  .ksa-page-header-left h1 {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--blue-dark);
+    margin-bottom: 4px;
+  }
+
+  .ksa-page-header-left p {
+    font-size: 13.5px;
+    color: var(--gray-muted);
+  }
+
+  .ksa-back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--blue-main);
+    text-decoration: none;
+    margin-bottom: 1.2rem;
+    transition: color 0.15s;
+  }
+  .ksa-back-btn:hover { color: var(--blue-dark); }
+
+  .ksa-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 2rem;
+  }
+
+  .ksa-summary-card {
+    background: var(--white);
+    border: 1px solid var(--gray-border);
+    border-radius: var(--radius);
+    padding: 1.1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .ksa-summary-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+
+  .icon-blue  { background: var(--blue-pale);  color: var(--blue-main); }
+  .icon-green { background: var(--green-bg);   color: var(--green-text); }
+  .icon-red   { background: var(--red-bg);     color: var(--red-text); }
+
+  .ksa-summary-card .num {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--gray-text);
+    line-height: 1.2;
+  }
+
+  .ksa-summary-card .lbl {
+    font-size: 12px;
+    color: var(--gray-muted);
+    margin-top: 2px;
+  }
+
+  .ksa-table-wrap {
+    background: var(--white);
+    border: 1px solid var(--gray-border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .ksa-table-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--gray-border);
+    background: var(--gray-bg);
+  }
+
+  .ksa-table-toolbar span {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gray-text);
+  }
+
+  .ksa-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    background: var(--blue-pale);
+    color: var(--blue-dark);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+  }
+
+  thead th {
+    padding: 11px 16px;
+    text-align: left;
+    font-weight: 500;
+    color: var(--gray-muted);
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    background: var(--gray-bg);
+    border-bottom: 1px solid var(--gray-border);
+  }
+
+  tbody tr {
+    border-bottom: 1px solid var(--gray-border);
+    transition: background 0.1s;
+  }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--blue-pale); }
+
+  tbody td {
+    padding: 13px 16px;
+    color: var(--gray-text);
+    vertical-align: middle;
+  }
+
+  .ksa-row-num {
+    width: 36px;
+    color: var(--gray-muted);
+    font-size: 12.5px;
+    text-align: center;
+  }
+
+  .ksa-avatar-sm {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--blue-pale);
+    color: var(--blue-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    flex-shrink: 0;
+    border: 1.5px solid var(--blue-light);
+  }
+
+  .ksa-name-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .ksa-student-name {
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--gray-text);
+  }
+
+  .ksa-student-sub {
+    font-size: 11.5px;
+    color: var(--gray-muted);
+    margin-top: 1px;
+  }
+
+  .pay-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 999px;
+    border: 1.5px solid;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+    white-space: nowrap;
+  }
+  .pay-btn:hover  { opacity: 0.82; }
+  .pay-btn:active { transform: scale(0.97); }
+
+  .pay-btn--paid {
+    background: #eaf3de;
+    border-color: #639922;
+    color: #27500a;
+  }
+  .pay-btn--unpaid {
+    background: #fcebeb;
+    border-color: #e24b4a;
+    color: #791f1f;
+  }
+  .pay-btn--report {
+    background: var(--blue-pale);
+    border-color: var(--blue-light);
+    color: var(--blue-dark);
+    text-decoration: none;
+  }
+  .pay-btn--report:hover {
+    background: var(--blue-light);
+    opacity: 1;
+  }
+
+  .ksa-empty {
+    text-align: center;
+    padding: 3.5rem 1rem;
+    color: var(--gray-muted);
+    font-size: 14px;
+  }
+  .ksa-empty i {
+    font-size: 40px;
+    display: block;
+    margin-bottom: 10px;
+    color: var(--gray-border);
+  }
+
+  .ksa-status.loading {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ksa-page">
+
+  <a href="{% url 'class_list' %}" class="ksa-back-btn">
+    <i class="ti ti-arrow-left"></i>
+    Back to Classes
+  </a>
+
+  <div class="ksa-page-header">
+    <div class="ksa-page-header-left">
+      <h1>{{ classroom.name }}</h1>
+      <p>Student list for {{ month|date:"F" }} {{ year }}</p>
+    </div>
+    <span class="ksa-badge">
+      <i class="ti ti-users"></i>
+      {{ student_data|length }} Students
+    </span>
+  </div>
+
+  <!-- Summary -->
+  <div class="ksa-summary">
+    <div class="ksa-summary-card">
+      <div class="ksa-summary-icon icon-blue">
+        <i class="ti ti-users"></i>
+      </div>
+      <div>
+        <div class="num">{{ student_data|length }}</div>
+        <div class="lbl">Total Students</div>
+      </div>
+    </div>
+    <div class="ksa-summary-card">
+      <div class="ksa-summary-icon icon-green">
+        <i class="ti ti-circle-check"></i>
+      </div>
+      <div>
+        <div class="num" style="color: var(--green-text);" id="paid-count">{{ paid_count }}</div>
+        <div class="lbl">Paid This Month</div>
+      </div>
+    </div>
+    <div class="ksa-summary-card">
+      <div class="ksa-summary-icon icon-red">
+        <i class="ti ti-circle-x"></i>
+      </div>
+      <div>
+        <div class="num" style="color: var(--red-text);" id="unpaid-count">{{ unpaid_count }}</div>
+        <div class="lbl">Unpaid This Month</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="ksa-table-wrap">
+    <div class="ksa-table-toolbar">
+      <span>All Students</span>
+    </div>
+
+    {% if student_data %}
+    <table>
+      <thead>
+        <tr>
+          <th class="ksa-row-num">#</th>
+          <th>Student</th>
+          <th>School</th>
+          <th>Guardian Phone</th>
+          <th>Payment — {{ month }}/{{ year }}</th>
+          <th>Report</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in student_data %}
+        <tr>
+          <td class="ksa-row-num">{{ forloop.counter }}</td>
+          <td>
+            <div class="ksa-name-cell">
+              <div class="ksa-avatar-sm">
+                {{ item.student.full_name|slice:":2"|upper }}
+              </div>
+              <div>
+                <div class="ksa-student-name">{{ item.student.full_name }}</div>
+                <div class="ksa-student-sub">{{ item.student.user.username }}</div>
+              </div>
+            </div>
+          </td>
+          <td>{{ item.student.school_name }}</td>
+          <td>
+            <div style="font-size: 13px;">{{ item.student.guardian_phone_1 }}</div>
+            {% if item.student.guardian_phone_2 %}
+            <div class="ksa-student-sub">{{ item.student.guardian_phone_2 }}</div>
+            {% endif %}
+          </td>
+          <td>
+            <button
+              class="pay-btn {% if item.is_paid %}pay-btn--paid{% else %}pay-btn--unpaid{% endif %}"
+              data-url="{% url 'mark_payment' item.student.id %}">
+              {% if item.is_paid %}
+                <i class="ti ti-circle-check" aria-hidden="true"></i> Paid
+              {% else %}
+                <i class="ti ti-circle-x" aria-hidden="true"></i> Unpaid
+              {% endif %}
+            </button>
+          </td>
+          <td>
+            <a href="{% url 'reports:teacher_student_report' item.student.id %}"
+               class="pay-btn pay-btn--report">
+              <i class="ti ti-chart-bar" aria-hidden="true"></i> Report
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="ksa-empty">
+      <i class="ti ti-users-group"></i>
+      No students found in this classroom.
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+
+<script>
+  const paidEl   = document.getElementById('paid-count');
+  const unpaidEl = document.getElementById('unpaid-count');
+
+  function showToast(message, type = 'success') {
+    const wrap = document.querySelector('.messages-wrap') || (() => {
+      const d = document.createElement('div');
+      d.className = 'messages-wrap';
+      document.body.appendChild(d);
+      return d;
+    })();
+    const toast = document.createElement('div');
+    toast.className = `msg ${type}`;
+    const icon = type === 'success'
+      ? 'ti-circle-check'
+      : type === 'error' ? 'ti-circle-x' : 'ti-info-circle';
+    toast.innerHTML = `<i class="ti ${icon}" aria-hidden="true"></i><span>${message}</span>`;
+    wrap.appendChild(toast);
+    setTimeout(() => {
+      toast.style.transition = 'opacity 0.4s';
+      toast.style.opacity = '0';
+      setTimeout(() => toast.remove(), 400);
+    }, 3000);
+  }
+
+  function showConfirm(message, onConfirm) {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+      position: fixed; inset: 0; z-index: 999;
+      background: rgba(0,0,0,0.35);
+      display: flex; align-items: center; justify-content: center;
+      animation: fadeIn 0.15s ease;
+    `;
+    overlay.innerHTML = `
+      <div style="
+        background: #fff; border-radius: 12px;
+        border: 0.5px solid var(--gray-border);
+        padding: 28px 28px 20px;
+        max-width: 360px; width: 90%;
+        animation: slideUp 0.2s ease;
+      ">
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+          <div style="
+            width:40px; height:40px; border-radius:50%; flex-shrink:0;
+            background: var(--amber-bg); color: var(--amber-text);
+            display:flex; align-items:center; justify-content:center; font-size:20px;
+          ">
+            <i class="ti ti-alert-triangle"></i>
+          </div>
+          <div>
+            <div style="font-weight:600; font-size:15px; color:var(--gray-text); margin-bottom:3px;">Confirm Change</div>
+            <div style="font-size:13.5px; color:var(--gray-muted);">${message}</div>
+          </div>
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+          <button id="confirm-cancel" style="
+            padding: 8px 18px; border-radius: 7px;
+            border: 0.5px solid var(--gray-border);
+            background: #fff; color: var(--gray-text);
+            font-size: 13.5px; cursor: pointer;
+          ">Cancel</button>
+          <button id="confirm-ok" style="
+            padding: 8px 18px; border-radius: 7px;
+            border: none; background: var(--blue-main);
+            color: #fff; font-size: 13.5px;
+            font-weight: 500; cursor: pointer;
+          ">Yes, Change</button>
+        </div>
+      </div>
+      <style>
+        @keyframes fadeIn  { from { opacity:0 } to { opacity:1 } }
+        @keyframes slideUp { from { transform:translateY(12px); opacity:0 } to { transform:translateY(0); opacity:1 } }
+      </style>
+    `;
+    document.body.appendChild(overlay);
+    overlay.querySelector('#confirm-cancel').addEventListener('click', () => overlay.remove());
+    overlay.querySelector('#confirm-ok').addEventListener('click', () => {
+      overlay.remove();
+      onConfirm();
+    });
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  }
+
+  document.querySelectorAll('.pay-btn[data-url]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const isPaid      = btn.classList.contains('pay-btn--paid');
+      const studentName = btn.closest('tr').querySelector('.ksa-student-name').textContent.trim();
+      const action      = isPaid ? 'mark as Unpaid' : 'mark as Paid';
+
+      showConfirm(
+        `Are you sure you want to <strong>${action}</strong> for <strong>${studentName}</strong>?`,
+        async () => {
+          btn.classList.add('loading');
+          try {
+            const res  = await fetch(btn.dataset.url, {
+              method: 'POST',
+              headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+            });
+            const data = await res.json();
+
+            if (data.is_paid) {
+              btn.className = 'pay-btn pay-btn--paid';
+              btn.innerHTML = '<i class="ti ti-circle-check" aria-hidden="true"></i> Paid';
+              paidEl.textContent   = parseInt(paidEl.textContent)   + 1;
+              unpaidEl.textContent = parseInt(unpaidEl.textContent) - 1;
+              showToast(`${studentName} marked as <strong>Paid</strong> ✓`, 'success');
+            } else {
+              btn.className = 'pay-btn pay-btn--unpaid';
+              btn.innerHTML = '<i class="ti ti-circle-x" aria-hidden="true"></i> Unpaid';
+              paidEl.textContent   = parseInt(paidEl.textContent)   - 1;
+              unpaidEl.textContent = parseInt(unpaidEl.textContent) + 1;
+              showToast(`${studentName} marked as <strong>Unpaid</strong>`, 'error');
+            }
+          } catch (e) {
+            showToast('Something went wrong. Please try again.', 'error');
+          }
+          btn.classList.remove('loading');
+        }
+      );
+    });
+  });
+</script>
+{% endblock %}

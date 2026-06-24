@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}{{ settings.academy_name|default:"KSA" }}{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.8.0/dist/tabler-icons.min.css">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue-dark:    #09315A;
+      --blue-main:    #145396;
+      --blue-mid:     #2B73C8;
+      --blue-light:   #A8CDEE;
+      --blue-pale:    #E8F2FB;
+      --blue-accent:  #3D8EE8;
+
+      --gray-text:    #2E2E2C;
+      --gray-sub:     #5A5957;
+      --gray-muted:   #8E8C86;
+      --gray-border:  #DDD9CE;
+      --gray-bg:      #F3F1EB;
+      --gray-card:    #FAFAF8;
+      --white:        #FFFFFF;
+
+      --green-bg:     #E8F5DA; --green-text: #2E5E0A; --green-border: #B8D98F;
+      --amber-bg:     #FDF3DC; --amber-text: #7A4508; --amber-border: #F5BE6A;
+      --red-bg:       #FBE9E9; --red-text:   #922020; --red-border:   #F2BABA;
+
+      --sidebar-w:    248px;
+      --topbar-h:     56px;
+
+      --radius:       12px;
+      --radius-sm:    8px;
+      --radius-xs:    6px;
+
+      --shadow-sm:    0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md:    0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+
+      --font-display: 'Sora', -apple-system, sans-serif;
+      --font-body:    'Inter', -apple-system, sans-serif;
+    }
+
+    html, body {
+      min-height: 100%;
+      background: var(--gray-bg);
+      color: var(--gray-text);
+      font-family: var(--font-body);
+      font-size: 14.5px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Overlay ── */
+    .ksa-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(9, 25, 44, 0.55);
+      backdrop-filter: blur(2px);
+      z-index: 90;
+    }
+    .ksa-overlay.open { display: block; }
+
+    /* ── Layout ── */
+    .ksa-layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ══════════════════════════════════════
+       SIDEBAR
+    ══════════════════════════════════════ */
+    .ksa-sidebar {
+      width: var(--sidebar-w);
+      background: var(--blue-dark);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; left: 0;
+      height: 100vh;
+      z-index: 100;
+      overflow-y: auto;
+      overflow-x: hidden;
+      transition: transform 0.26s cubic-bezier(0.4,0,0.2,1);
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.08) transparent;
+    }
+
+    /* Brand */
+    .ksa-sidebar-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 20px 16px 18px;
+      text-decoration: none;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      flex-shrink: 0;
+    }
+
+    .ksa-sidebar-logo {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #2B73C8, #3D8EE8);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-display);
+      font-size: 13px; font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(45,115,200,0.4);
+      letter-spacing: -0.3px;
+    }
+
+    .ksa-sidebar-title {
+      color: #fff;
+      font-family: var(--font-display);
+      font-size: 12.5px;
+      font-weight: 600;
+      line-height: 1.3;
+      min-width: 0;
+    }
+    .ksa-sidebar-title span {
+      display: block;
+      font-size: 10.5px;
+      color: rgba(168, 205, 238, 0.6);
+      font-weight: 400;
+      font-family: var(--font-body);
+      margin-top: 2px;
+    }
+
+    /* Nav sections */
+    .ksa-nav-section {
+      padding: 16px 10px 4px;
+      flex-shrink: 0;
+    }
+
+    .ksa-nav-section-label {
+      font-size: 9.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: rgba(168,205,238,0.35);
+      padding: 0 8px;
+      margin-bottom: 5px;
+    }
+
+    .ksa-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 8px 10px;
+      border-radius: var(--radius-sm);
+      color: rgba(168,205,238,0.85);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 400;
+      transition: background 0.14s, color 0.14s;
+      margin-bottom: 1px;
+      position: relative;
+    }
+    .ksa-nav-item i {
+      font-size: 16.5px;
+      flex-shrink: 0;
+      opacity: 0.75;
+      transition: opacity 0.14s;
+    }
+    .ksa-nav-item:hover {
+      background: rgba(255,255,255,0.07);
+      color: #fff;
+    }
+    .ksa-nav-item:hover i { opacity: 1; }
+
+    .ksa-nav-item.active {
+      background: var(--blue-main);
+      color: #fff;
+      font-weight: 500;
+    }
+    .ksa-nav-item.active::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 20%; bottom: 20%;
+      width: 3px;
+      background: var(--blue-accent);
+      border-radius: 0 3px 3px 0;
+    }
+    .ksa-nav-item.active i { opacity: 1; }
+
+    /* Pending badge inside nav */
+    .ksa-nav-badge {
+      margin-left: auto;
+      background: #f59e0b;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 999px;
+      padding: 1px 7px;
+      line-height: 1.6;
+      flex-shrink: 0;
+    }
+
+    /* Footer items */
+    .ksa-sidebar-footer {
+      margin-top: auto;
+      padding: 10px 10px 14px;
+      border-top: 1px solid rgba(255,255,255,0.07);
+      flex-shrink: 0;
+    }
+
+    .ksa-nav-logout {
+      color: rgba(240,160,160,0.85) !important;
+    }
+    .ksa-nav-logout:hover {
+      background: rgba(220,60,60,0.15) !important;
+      color: #f7bfbf !important;
+    }
+
+    .ksa-nav-register {
+      background: var(--blue-mid) !important;
+      color: #fff !important;
+      font-weight: 500;
+    }
+    .ksa-nav-register:hover {
+      background: var(--blue-accent) !important;
+      color: #fff !important;
+    }
+    .ksa-nav-register i { opacity: 1 !important; }
+
+    /* ══════════════════════════════════════
+       MAIN
+    ══════════════════════════════════════ */
+    .ksa-main {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* ── Topbar ── */
+    .ksa-topbar {
+      height: var(--topbar-h);
+      background: var(--white);
+      border-bottom: 1px solid var(--gray-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      gap: 12px;
+    }
+
+    .ksa-topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .ksa-hamburger {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 7px;
+      border-radius: var(--radius-sm);
+      color: var(--gray-sub);
+      flex-shrink: 0;
+      transition: background 0.14s;
+    }
+    .ksa-hamburger:hover { background: var(--gray-bg); }
+    .ksa-hamburger i { font-size: 21px; display: block; }
+
+    .ksa-topbar-title {
+      font-size: 14.5px;
+      font-weight: 500;
+      color: var(--gray-text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-family: var(--font-display);
+    }
+
+    .ksa-topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .ksa-topbar-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12.5px;
+      color: var(--gray-sub);
+      background: var(--gray-bg);
+      padding: 5px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--gray-border);
+      white-space: nowrap;
+    }
+    .ksa-topbar-badge i { font-size: 13.5px; }
+
+    /* ── Page content ── */
+    .ksa-content {
+      flex: 1;
+      padding: 28px 32px;
+    }
+
+    /* ── Footer ── */
+    .ksa-footer {
+      background: var(--white);
+      border-top: 1px solid var(--gray-border);
+      padding: 18px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--gray-muted);
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .ksa-footer a { color: var(--blue-main); text-decoration: none; }
+    .ksa-footer a:hover { text-decoration: underline; }
+
+    /* ══════════════════════════════════════
+       FLASH MESSAGES
+    ══════════════════════════════════════ */
+    .messages-wrap {
+      position: fixed;
+      top: 16px; right: 16px;
+      z-index: 999;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-width: 320px;
+      pointer-events: none;
+    }
+    .msg {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      border: 1px solid;
+      box-shadow: var(--shadow-md);
+      pointer-events: auto;
+      animation: ksa-slide-in 0.22s cubic-bezier(0.2,0,0,1);
+    }
+    .msg.success { background: var(--green-bg); color: var(--green-text); border-color: var(--green-border); }
+    .msg.error   { background: var(--red-bg);   color: var(--red-text);   border-color: var(--red-border); }
+    .msg.info    { background: var(--blue-pale); color: var(--blue-dark);  border-color: var(--blue-light); }
+    .msg.warning { background: var(--amber-bg);  color: var(--amber-text); border-color: var(--amber-border); }
+    .msg i { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+    @keyframes ksa-slide-in {
+      from { opacity: 0; transform: translateX(14px) scale(0.97); }
+      to   { opacity: 1; transform: translateX(0) scale(1); }
+    }
+
+    /* ══════════════════════════════════════
+       MOBILE
+    ══════════════════════════════════════ */
+    @media (max-width: 768px) {
+      .ksa-sidebar { transform: translateX(-100%); }
+      .ksa-sidebar.open { transform: translateX(0); }
+      .ksa-main { margin-left: 0; }
+      .ksa-hamburger { display: flex; align-items: center; justify-content: center; }
+      .ksa-topbar { padding: 0 16px; }
+      .ksa-badge-location { display: none !important; }
+      .ksa-content { padding: 20px 16px; }
+      .ksa-footer { padding: 16px; flex-direction: column; align-items: flex-start; gap: 4px; }
+      .messages-wrap { top: 68px; right: 10px; left: 10px; max-width: none; }
+    }
+  </style>
+
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+  {% if messages %}
+  <div class="messages-wrap" role="alert" aria-live="polite">
+    {% for message in messages %}
+    <div class="msg {{ message.tags }}">
+      {% if message.tags == 'success' %}<i class="ti ti-circle-check"></i>
+      {% elif message.tags == 'error' %}<i class="ti ti-circle-x"></i>
+      {% elif message.tags == 'warning' %}<i class="ti ti-alert-triangle"></i>
+      {% else %}<i class="ti ti-info-circle"></i>
+      {% endif %}
+      <span>{{ message }}</span>
+    </div>
+    {% endfor %}
+  </div>
+  <script>
+    setTimeout(() => {
+      document.querySelectorAll('.msg').forEach(m => {
+        m.style.transition = 'opacity 0.35s, transform 0.35s';
+        m.style.opacity = '0';
+        m.style.transform = 'translateX(10px)';
+        setTimeout(() => m.remove(), 360);
+      });
+    }, 4200);
+  </script>
+  {% endif %}
+
+  <div class="ksa-overlay" id="sidebarOverlay"></div>
+
+  <div class="ksa-layout">
+
+    <!-- ══ SIDEBAR ══ -->
+    <aside class="ksa-sidebar" id="ksa-sidebar" aria-label="Main navigation">
+      <a class="ksa-sidebar-brand" href="{% url 'home' %}">
+        <div class="ksa-sidebar-logo">KSA</div>
+        <div class="ksa-sidebar-title">
+          {{ settings.academy_name|default:"Pakundia Coaching Center" }}
+          <span>{{ settings.tagline|default:"Pakundia, Kishoreganj" }}</span>
+        </div>
+      </a>
+
+      <div class="ksa-nav-section">
+        <div class="ksa-nav-section-label">Explore</div>
+        <a href="#hero"     class="ksa-nav-item"><i class="ti ti-home-2"></i> Home</a>
+        <a href="#courses"  class="ksa-nav-item"><i class="ti ti-book-2"></i> Courses</a>
+        <a href="#results"  class="ksa-nav-item"><i class="ti ti-trophy"></i> Results</a>
+        <a href="#teachers" class="ksa-nav-item"><i class="ti ti-school"></i> Teachers</a>
+        <a href="#schedule" class="ksa-nav-item"><i class="ti ti-calendar-event"></i> Schedule</a>
+        <a href="#notices"  class="ksa-nav-item"><i class="ti ti-bell"></i> Notices</a>
+        <a href="#gallery"  class="ksa-nav-item"><i class="ti ti-photo"></i> Gallery</a>
+        <a href="#faq"      class="ksa-nav-item"><i class="ti ti-help-circle"></i> FAQ</a>
+        <a href="#location" class="ksa-nav-item"><i class="ti ti-map-pin"></i> Contact</a>
+      </div>
+
+      {% if user.is_authenticated %}
+        {% if user.role == 'teacher' %}
+        <div class="ksa-nav-section">
+          <div class="ksa-nav-section-label">Teacher Panel</div>
+
+          <a href="{% url 'class_list' %}"
+             class="ksa-nav-item {% if request.resolver_match.url_name == 'class_list' %}active{% endif %}">
+            <i class="ti ti-users"></i> Student List
+          </a>
+
+          <!-- ✅ Pending Students -->
+          <a href="{% url 'pending_students' %}"
+             class="ksa-nav-item {% if request.resolver_match.url_name == 'pending_students' %}active{% endif %}">
+            <i class="ti ti-user-check"></i> Pending Students
+            {% if pending_students_count %}
+              <span class="ksa-nav-badge">{{ pending_students_count }}</span>
+            {% endif %}
+          </a>
+
+          <a href="{% url 'exams:exam_list' %}"
+             class="ksa-nav-item {% if 'exam_list' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="ti ti-file-description"></i> Exams
+          </a>
+
+          <a href="{% url 'exams:exam_create' %}"
+             class="ksa-nav-item {% if 'exam_create' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="ti ti-circle-plus"></i> New Exam
+          </a>
+        </div>
+        {% endif %}
+
+        <div class="ksa-nav-section">
+          <div class="ksa-nav-section-label">Account</div>
+          <a href="{% url 'reports:student_dashboard' %}"
+             class="ksa-nav-item {% if 'dashboard' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="ti ti-layout-dashboard"></i> Dashboard
+          </a>
+        </div>
+
+        <div class="ksa-sidebar-footer">
+          <div style="padding: 0 8px 8px; font-size: 11px; color: rgba(168,205,238,0.4);">
+            Signed in as <strong style="color: rgba(168,205,238,0.7);">{{ user.get_full_name|default:user.username }}</strong>
+          </div>
+          <a href="{% url 'logout' %}" class="ksa-nav-item ksa-nav-logout">
+            <i class="ti ti-logout"></i> Sign Out
+          </a>
+        </div>
+
+      {% else %}
+        <div class="ksa-sidebar-footer">
+          <a href="{% url 'login' %}" class="ksa-nav-item" style="margin-bottom: 6px;">
+            <i class="ti ti-login-2"></i> Login
+          </a>
+          <a href="{% url 'student_register' %}" class="ksa-nav-item ksa-nav-register">
+            <i class="ti ti-user-plus"></i> Register Now
+          </a>
+        </div>
+      {% endif %}
+    </aside>
+
+    <!-- ══ MAIN ══ -->
+    <div class="ksa-main">
+      <header class="ksa-topbar">
+        <div class="ksa-topbar-left">
+          <button class="ksa-hamburger" id="sidebarToggle" aria-label="Toggle navigation">
+            <i class="ti ti-menu-2"></i>
+          </button>
+          <span class="ksa-topbar-title">{% block page_title %}{% endblock %}</span>
+        </div>
+        <div class="ksa-topbar-right">
+          {% if user.is_authenticated %}
+          <span class="ksa-topbar-badge">
+            <i class="ti ti-user-circle"></i>
+            {{ user.get_full_name|default:user.username }}
+          </span>
+          {% endif %}
+          <span class="ksa-topbar-badge ksa-badge-location">
+            <i class="ti ti-map-pin"></i>
+            Pakundia, Kishoreganj
+          </span>
+        </div>
+      </header>
+
+      <main class="ksa-content">
+        {% block content %}{% endblock %}
+      </main>
+
+      <footer class="ksa-footer">
+        <span>© {% now "Y" %} {{ settings.academy_name|default:"Pakundia Coaching Center" }} · Pakundia, Kishoreganj</span>
+        <span>SSC &amp; HSC Science Coaching since {{ settings.established_year|default:"2009" }}</span>
+      </footer>
+    </div><!-- .ksa-main -->
+
+  </div><!-- .ksa-layout -->
+
+  <script>
+    const sidebar = document.getElementById('ksa-sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    const toggle  = document.getElementById('sidebarToggle');
+
+    function openSidebar()  {
+      sidebar.classList.add('open');
+      overlay.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeSidebar() {
+      sidebar.classList.remove('open');
+      overlay.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    toggle.addEventListener('click', () =>
+      sidebar.classList.contains('open') ? closeSidebar() : openSidebar()
+    );
+    overlay.addEventListener('click', closeSidebar);
+
+    sidebar.querySelectorAll('.ksa-nav-item').forEach(link => {
+      link.addEventListener('click', () => {
+        if (window.innerWidth <= 768) closeSidebar();
+      });
+    });
+
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', e => {
+        const target = document.querySelector(a.getAttribute('href'));
+        if (target) {
+          e.preventDefault();
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+  </script>
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

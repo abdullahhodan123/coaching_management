@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+{% block page_title %}Report — {{ classroom.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .report-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .filter-form {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    background: #fff;
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    border: 0.5px solid var(--gray-border);
+    margin-bottom: 20px;
+  }
+  .filter-form label { font-size: 13px; color: var(--gray-muted); }
+  .filter-form input[type="date"] {
+    padding: 6px 10px;
+    border: 0.5px solid var(--gray-border);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    color: var(--gray-text);
+    background: var(--gray-bg);
+  }
+  .filter-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 16px;
+    background: var(--blue-main);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .filter-btn:hover { background: var(--blue-dark); }
+
+  .report-wrap {
+    overflow-x: auto;
+    background: #fff;
+    border: 0.5px solid var(--gray-border);
+    border-radius: var(--radius);
+  }
+  .report-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px;
+  }
+  .report-table th, .report-table td {
+    padding: 10px 12px;
+    font-size: 13px;
+    text-align: center;
+    border-bottom: 0.5px solid var(--gray-border);
+    border-right: 0.5px solid var(--gray-border);
+    white-space: nowrap;
+  }
+  .report-table th:last-child, .report-table td:last-child { border-right: none; }
+  .report-table thead th {
+    background: var(--gray-bg);
+    font-weight: 600;
+    color: var(--gray-muted);
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .report-table tbody tr:last-child td { border-bottom: none; }
+  .report-table td:first-child {
+    text-align: left;
+    font-weight: 500;
+    color: var(--gray-text);
+    position: sticky;
+    left: 0;
+    background: #fff;
+    z-index: 1;
+    min-width: 150px;
+  }
+
+  .s-present { background: var(--green-bg); color: var(--green-text); border-radius: 4px; padding: 2px 7px; font-size: 11.5px; font-weight: 600; }
+  .s-absent  { background: var(--red-bg);   color: var(--red-text);   border-radius: 4px; padding: 2px 7px; font-size: 11.5px; font-weight: 600; }
+  .s-late    { background: var(--amber-bg);  color: var(--amber-text); border-radius: 4px; padding: 2px 7px; font-size: 11.5px; font-weight: 600; }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .summary-card {
+    background: #fff;
+    border: 0.5px solid var(--gray-border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+  }
+  .summary-card .label { font-size: 12px; color: var(--gray-muted); margin-bottom: 4px; }
+  .summary-card .val   { font-size: 22px; font-weight: 600; color: var(--gray-text); }
+
+  .btn-outline {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 16px;
+    background: #fff;
+    color: var(--gray-text);
+    border: 0.5px solid var(--gray-border);
+    border-radius: var(--radius-sm);
+    font-size: 13.5px;
+    text-decoration: none;
+    transition: background 0.15s;
+  }
+  .btn-outline:hover { background: var(--gray-bg); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="report-header">
+  <div>
+    <h2 style="font-size:18px; font-weight:600; margin-bottom:4px;">{{ classroom.name }} — Attendance Report</h2>
+    <p style="font-size:13.5px; color:var(--gray-muted);">{{ students.count }} student{{ students.count|pluralize }} · {{ dates|length }} day{{ dates|length|pluralize }} recorded</p>
+  </div>
+  <a href="{% url 'take_attendance' classroom.id %}" class="btn-outline">
+    <i class="ti ti-clipboard-check"></i> Take Attendance
+  </a>
+</div>
+
+<!-- Date filter -->
+<form method="get" class="filter-form">
+  <label>From</label>
+  <input type="date" name="from_date" value="{{ from_date|default:'' }}">
+  <label>To</label>
+  <input type="date" name="to_date" value="{{ to_date|default:'' }}">
+  <button type="submit" class="filter-btn"><i class="ti ti-filter"></i> Filter</button>
+  {% if from_date or to_date %}
+  <a href="{% url 'attendance_report' classroom.id %}" style="font-size:13px; color:var(--gray-muted); text-decoration:none;">
+    <i class="ti ti-x"></i> Clear
+  </a>
+  {% endif %}
+</form>
+
+{% if dates %}
+<!-- Attendance table -->
+<div class="report-wrap">
+  <table class="report-table">
+    <thead>
+      <tr>
+        <th>Student</th>
+        {% for date in dates %}
+        <th>{{ date|date:"d M" }}</th>
+        {% endfor %}
+        <th style="background:#eaf3de; color:#3B6D11;">P</th>
+        <th style="background:#fcebeb; color:#A32D2D;">A</th>
+        <th style="background:#faeeda; color:#854F0B;">L</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for student, date_map in report.items %}
+      <tr>
+        <td>{{ student.full_name }}</td>
+        {% for date in dates %}
+        <td>
+          {% with status=date_map|default:{}  %}
+            {% with s=date_map %}
+              {% if s %}
+                {% for k, v in s.items %}
+                  {% if k == date %}
+                    {% if v == 'present' %}<span class="s-present">P</span>
+                    {% elif v == 'absent' %}<span class="s-absent">A</span>
+                    {% elif v == 'late'   %}<span class="s-late">L</span>
+                    {% else %}—{% endif %}
+                  {% endif %}
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+          {% endwith %}
+        </td>
+        {% endfor %}
+        <td style="font-weight:600; color:var(--green-text);">{{ summary|default:{}|get_item:student.id|default:{}|get_item:'present'|default:0 }}</td>
+        <td style="font-weight:600; color:var(--red-text);">{{ summary|default:{}|get_item:student.id|default:{}|get_item:'absent'|default:0 }}</td>
+        <td style="font-weight:600; color:var(--amber-text);">{{ summary|default:{}|get_item:student.id|default:{}|get_item:'late'|default:0 }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% else %}
+<div style="text-align:center; padding:48px; background:#fff; border-radius:var(--radius); border:0.5px solid var(--gray-border); color:var(--gray-muted);">
+  <i class="ti ti-calendar-off" style="font-size:36px; display:block; margin-bottom:10px;"></i>
+  No attendance records found.
+</div>
+{% endif %}
+
+{% endblock %}

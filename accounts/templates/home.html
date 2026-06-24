@@ -1,0 +1,1466 @@
+{% extends "base.html" %}
+
+{% block title %}{{ settings.academy_name|default:"Pakundia Coaching Center" }} — Pakundia, Kishoreganj — Premier Coaching Center{% endblock %}
+{% block page_title %}Home{% endblock %}
+
+{% block extra_css %}
+<style>
+  .ksa-content { padding: 0 !important; }
+
+  .ks-section {
+    padding: 56px 40px;
+    max-width: 1080px;
+    margin: 0 auto;
+  }
+  .ks-section-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--blue-mid);
+    background: var(--blue-pale);
+    border: 1px solid #C8DFF6;
+    border-radius: 999px;
+    padding: 4px 12px;
+    margin-bottom: 14px;
+  }
+  .ks-section-heading {
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--gray-text);
+    line-height: 1.25;
+    margin-bottom: 6px;
+  }
+  .ks-section-sub {
+    font-size: 14px;
+    color: var(--gray-muted);
+    line-height: 1.6;
+    max-width: 540px;
+    margin-bottom: 30px;
+  }
+
+  .ks-bg-white  { background: var(--white); }
+  .ks-bg-gray   { background: var(--gray-bg); }
+  .ks-bg-dark   { background: var(--blue-dark); }
+  .ks-bg-stripe {
+    background: repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 8px,
+      rgba(0,0,0,0.015) 8px,
+      rgba(0,0,0,0.015) 16px
+    ), var(--gray-bg);
+  }
+
+  #hero {
+    background: linear-gradient(145deg, #07264A 0%, #09315A 40%, #145396 75%, #1C6ABF 100%);
+    position: relative;
+    overflow: hidden;
+    padding: 80px 40px 70px;
+    text-align: center;
+  }
+  #hero::before {
+    content: '';
+    position: absolute;
+    width: 700px; height: 700px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(61,142,232,0.15) 0%, transparent 70%);
+    top: -200px; right: -150px;
+    pointer-events: none;
+  }
+  #hero::after {
+    content: '';
+    position: absolute;
+    width: 400px; height: 400px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(61,142,232,0.1) 0%, transparent 70%);
+    bottom: -100px; left: -80px;
+    pointer-events: none;
+  }
+
+  .hero-inner { position: relative; z-index: 1; max-width: 680px; margin: 0 auto; }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.09);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 999px;
+    padding: 5px 16px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--blue-light);
+    margin-bottom: 24px;
+    letter-spacing: 0.01em;
+  }
+
+  .hero-heading {
+    font-family: var(--font-display);
+    font-size: clamp(28px, 4vw, 42px);
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.18;
+    margin-bottom: 18px;
+    letter-spacing: -0.5px;
+  }
+  .hero-heading em {
+    font-style: normal;
+    color: #7DC4F8;
+  }
+
+  .hero-sub {
+    font-size: 15.5px;
+    color: rgba(168,205,238,0.85);
+    line-height: 1.7;
+    margin-bottom: 36px;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .hero-btns {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .ksa-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 24px;
+    border-radius: var(--radius-sm);
+    font-size: 13.5px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: transform 0.13s, box-shadow 0.13s, opacity 0.13s;
+    cursor: pointer;
+    border: none;
+    font-family: var(--font-body);
+  }
+  .ksa-btn:hover { transform: translateY(-1px); }
+  .ksa-btn-primary {
+    background: var(--blue-accent);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(45,115,200,0.4);
+  }
+  .ksa-btn-primary:hover { box-shadow: 0 6px 18px rgba(45,115,200,0.5); }
+  .ksa-btn-ghost {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.22);
+  }
+  .ksa-btn-ghost:hover { background: rgba(255,255,255,0.16); }
+
+  .stats-bar {
+    background: var(--white);
+    border-bottom: 1px solid var(--gray-border);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .stat-cell {
+    text-align: center;
+    padding: 22px 16px;
+    border-right: 1px solid var(--gray-border);
+    transition: background 0.14s;
+  }
+  .stat-cell:last-child { border-right: none; }
+  .stat-cell:hover { background: var(--blue-pale); }
+  .stat-num {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--blue-dark);
+    line-height: 1;
+    margin-bottom: 5px;
+    letter-spacing: -0.5px;
+  }
+  .stat-lbl {
+    font-size: 11.5px;
+    color: var(--gray-muted);
+    letter-spacing: 0.01em;
+  }
+
+  .courses-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 14px;
+  }
+  .course-card {
+    background: var(--white);
+    border: 1px solid var(--gray-border);
+    border-radius: var(--radius);
+    padding: 20px;
+    transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+    cursor: default;
+    display: flex;
+    flex-direction: column;
+  }
+  .course-card:hover {
+    border-color: var(--blue-mid);
+    box-shadow: 0 4px 16px rgba(21,83,150,0.1);
+    transform: translateY(-2px);
+  }
+  .course-icon {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 21px;
+    margin-bottom: 14px;
+    flex-shrink: 0;
+  }
+  .course-name {
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: var(--gray-text);
+  }
+  .course-desc {
+    font-size: 12.5px;
+    color: var(--gray-muted);
+    line-height: 1.55;
+    flex: 1;
+    margin-bottom: 12px;
+  }
+  .course-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .course-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: var(--blue-pale);
+    color: var(--blue-main);
+    border: 1px solid #C8DFF6;
+  }
+  .course-fee {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 700;
+    background: #EAF3DE;
+    border: 1px solid #B8D98F;
+    color: #2E5E0A;
+    padding: 3px 10px;
+    border-radius: 999px;
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+  }
+  .feat-card {
+    background: var(--white);
+    border: 1px solid var(--gray-border);
+    border-radius: var(--radius);
+    padding: 20px;
+    transition: box-shadow 0.15s;
+  }
+  .feat-card:hover { box-shadow: var(--shadow-sm); }
+  .feat-icon {
+    width: 40px; height: 40px;
+    border-radius: 9px;
+    background: var(--blue-pale);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 12px;
+  }
+  .feat-icon i { font-size: 20px; color: var(--blue-main); }
+  .feat-title {
+    font-size: 13.5px;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: var(--gray-text);
+  }
+  .feat-desc {
+    font-size: 12px;
+    color: var(--gray-muted);
+    line-height: 1.55;
+  }
+
+  .results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+    gap: 12px;
+  }
+  .result-card {
+    background: var(--white);
+    border: 1px solid var(--gray-border);
+    border-radius: var(--radius);
+    padding: 22px 16px;
+    text-align: center;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .result-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+  .result-val {
+    font-family: var(--font-display);
+    font-size: 30px;
+    font-weight: 700;
+    color: var(--blue-dark);
+    line-height: 1;
+    margin-bottom: 6px;
+    letter-spacing: -0.5px;
+  }
+  .result-label {
+    font-size: 12px;
+    color: var(--gray-sub);
+    margin-bottom: 10px;
+    line-height: 1.4;
+  }
+  .result-tag {
+    display: inline-block;
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 999px;
+  }
+
+  .teachers-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+    gap: 14px;
+  }
+  .teacher-card {
+    background: var(--white);
+    border: 1px solid var(--gray-border);
+    border-radius: var(--radius);
+    padding: 22px 16px;
+    text-align: center;
+    transition: box-shadow 0.15s;
+  }
+  .teacher-card:hover { box-shadow: var(--shadow-md); }
+  .teacher-avatar {
+    width: 62px; height: 62px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0 auto 14px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .teacher-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .teacher-name {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--gray-text);
+    margin-bottom: 3px;
+  }
+  .teacher-sub {
+    font-size: 11.5px;
+    color: var(--gray-muted);
+    margin-bottom: 6px;
+  }
+  .teacher-exp {
+    font-size: 11.5px;
+    color: var(--blue-main);
+    font-weight: 500;
+  }
+  .teacher-designation {
+    font-size: 11px;
+    color: var(--gray-muted);
+    margin-top: 2px;
+  }
+
+  .schedule-table-wrap {
+    overflow-x: auto;
+    border-radius: var(--radius);
+    border: 1px solid var(--gray-border);
+    box-shadow: var(--shadow-sm);
+  }
+  .schedule-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--white);
+    font-size: 13px;
+  }
+  .schedule-table thead { background: var(--blue-dark); color: #fff; }
+  .schedule-table th {
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+  }
+  .schedule-table td {
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--gray-border);
+    color: var(--gray-sub);
+    vertical-align: middle;
+  }
+  .schedule-table tr:last-child td { border-bottom: none; }
+  .schedule-table tr:hover td { background: var(--blue-pale); }
+  .sched-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 999px;
+  }
+  .sched-badge.morning   { background: #FEF3C7; color: #92400E; }
+  .sched-badge.afternoon { background: #E8F5DA; color: #2E5E0A; }
+  .sched-badge.evening   { background: var(--blue-pale); color: var(--blue-main); }
+  .sched-seats { font-size: 12px; font-weight: 500; }
+  .sched-seats.full { color: #922020; }
+  .sched-seats.open { color: #2E5E0A; }
+
+  .notices-list { display: flex; flex-direction: column; gap: 12px; }
+  .notice-item {
+    display: flex;
+    align-items: stretch;
+    border-radius: var(--radius);
+    border: 1px solid var(--gray-border);
+    background: var(--white);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow 0.18s, transform 0.18s;
+  }
+  .notice-item:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+  .notice-accent { width: 5px; flex-shrink: 0; }
+  .notice-body-wrap {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 16px 20px;
+    flex: 1;
+    min-width: 0;
+  }
+  .notice-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    font-size: 19px;
+  }
+  .notice-content { flex: 1; min-width: 0; }
+  .notice-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 5px;
+  }
+  .notice-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--gray-text);
+    font-family: var(--font-display);
+    line-height: 1.3;
+  }
+  .notice-pin {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #FEF3C7;
+    color: #92400E;
+    border: 1px solid #F5CE6A;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    flex-shrink: 0;
+  }
+  .notice-type-label {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 9px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    flex-shrink: 0;
+    border: 1px solid;
+  }
+  .notice-text {
+    font-size: 13.5px;
+    color: var(--gray-sub);
+    line-height: 1.65;
+    margin-bottom: 8px;
+  }
+  .notice-footer {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 2px;
+  }
+  .notice-meta {
+    font-size: 11.5px;
+    color: var(--gray-muted);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .notice-meta i { font-size: 13px; }
+  .notice-attachment {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--blue-main);
+    text-decoration: none;
+    padding: 3px 10px;
+    border-radius: 999px;
+    border: 1px solid #C8DFF6;
+    background: var(--blue-pale);
+    transition: background 0.13s;
+  }
+  .notice-attachment:hover { background: #D4E8F8; }
+
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 10px;
+  }
+  .gallery-item {
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    aspect-ratio: 4/3;
+    background: var(--blue-pale);
+    position: relative;
+    cursor: pointer;
+  }
+  .gallery-item img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s;
+    display: block;
+  }
+  .gallery-item:hover img { transform: scale(1.05); }
+  .gallery-item-caption {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: linear-gradient(transparent, rgba(9,25,44,0.75));
+    color: #fff;
+    font-size: 11px;
+    padding: 20px 8px 7px;
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+  .gallery-item:hover .gallery-item-caption { opacity: 1; }
+
+  .faq-list { display: flex; flex-direction: column; gap: 8px; }
+  .faq-item {
+    background: var(--white);
+    border: 1px solid var(--gray-border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+  }
+  .faq-question {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 15px 18px;
+    cursor: pointer;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--gray-text);
+    user-select: none;
+    transition: background 0.13s;
+  }
+  .faq-question:hover { background: var(--blue-pale); }
+  .faq-question i { font-size: 18px; color: var(--blue-mid); flex-shrink: 0; transition: transform 0.22s; }
+  .faq-answer {
+    display: none;
+    padding: 12px 18px 15px;
+    font-size: 13px;
+    color: var(--gray-sub);
+    line-height: 1.65;
+    border-top: 1px solid var(--gray-border);
+  }
+  .faq-item.open .faq-question { background: var(--blue-pale); color: var(--blue-dark); }
+  .faq-item.open .faq-question i { transform: rotate(180deg); }
+  .faq-item.open .faq-answer { display: block; }
+
+  .cta-band {
+    background: linear-gradient(120deg, #07264A 0%, #0F3F82 100%);
+    text-align: center;
+    padding: 60px 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  .cta-band::before {
+    content: '';
+    position: absolute;
+    width: 500px; height: 500px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(61,142,232,0.12) 0%, transparent 70%);
+    top: -160px; right: -80px;
+    pointer-events: none;
+  }
+  .cta-inner { position: relative; z-index: 1; max-width: 560px; margin: 0 auto; }
+  .cta-heading {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.22;
+    margin-bottom: 10px;
+    letter-spacing: -0.3px;
+  }
+  .cta-sub {
+    font-size: 14.5px;
+    color: rgba(168,205,238,0.8);
+    line-height: 1.65;
+    margin-bottom: 30px;
+  }
+  .cta-btns { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+
+  .loc-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 22px;
+    align-items: start;
+  }
+  .loc-map-wrap {
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--gray-border);
+    min-height: 280px;
+    background: var(--blue-pale);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: var(--blue-dark);
+    font-size: 14px;
+  }
+  .loc-map-wrap i { font-size: 40px; color: var(--blue-mid); }
+  .loc-map-wrap iframe { width: 100%; height: 280px; border: none; display: block; }
+  .loc-details { display: flex; flex-direction: column; gap: 12px; }
+  .loc-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 13px;
+    background: var(--white);
+    border: 1px solid var(--gray-border);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    transition: box-shadow 0.14s;
+  }
+  .loc-row:hover { box-shadow: var(--shadow-sm); }
+  .loc-row-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    background: var(--blue-pale);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .loc-row-icon i { font-size: 18px; color: var(--blue-main); }
+  .loc-row-text strong {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gray-text);
+    margin-bottom: 3px;
+  }
+  .loc-row-text span { font-size: 12.5px; color: var(--gray-muted); line-height: 1.55; }
+  .loc-row-text a { color: var(--blue-main); text-decoration: none; }
+  .loc-row-text a:hover { text-decoration: underline; }
+
+  /* Teacher Quotes */
+  .tq-card {
+    display: flex;
+    background: var(--white);
+    border: 1px solid var(--gray-border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .tq-card:last-child { margin-bottom: 0; }
+  .tq-photo-col {
+    width: 220px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 34px 18px;
+  }
+  .tq-photo-frame {
+    width: 150px; height: 150px;
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .tq-photo-frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .tq-photo-initials {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; font-weight: 700;
+  }
+  .tq-subject-label { font-size: 10.5px; font-weight: 600; text-align: center; line-height: 1.4; }
+  .tq-right {
+    flex: 1;
+    padding: 26px 28px 22px;
+    border-left: 1px solid var(--gray-border);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .tq-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 11px;
+    border-radius: 999px;
+    border: 1px solid;
+    margin-bottom: 12px;
+    width: fit-content;
+  }
+  .tq-qmark {
+    font-size: 52px;
+    line-height: 0.85;
+    font-family: Georgia, serif;
+    color: var(--gray-border);
+    margin-bottom: 4px;
+    display: block;
+  }
+  .tq-quote {
+    font-size: 13.5px;
+    line-height: 1.75;
+    color: var(--gray-sub);
+    font-style: italic;
+    margin-bottom: 18px;
+  }
+  .tq-divider { height: 1px; background: var(--gray-border); margin-bottom: 12px; }
+  .tq-name { font-size: 14px; font-weight: 600; color: var(--gray-text); margin-bottom: 2px; }
+  .tq-meta { font-size: 12px; color: var(--gray-muted); }
+
+  .ks-divider { height: 1px; background: var(--gray-border); margin: 0; }
+
+  .ks-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--gray-muted);
+    font-size: 13.5px;
+  }
+  .ks-empty i { font-size: 32px; display: block; margin-bottom: 10px; opacity: 0.4; }
+
+  @media (max-width: 900px) {
+    .ks-section { padding: 44px 24px; }
+    .stats-bar { grid-template-columns: repeat(2, 1fr); }
+    .stat-cell:nth-child(2) { border-right: none; }
+    .stat-cell:nth-child(3) { border-bottom: none; border-right: 1px solid var(--gray-border); }
+    .stat-cell:nth-child(4) { border-bottom: none; border-right: none; }
+    .loc-grid { grid-template-columns: 1fr; }
+    .tq-card { flex-direction: column; }
+    .tq-photo-col { width: 100%; flex-direction: row; padding: 18px 20px; gap: 16px; border-bottom: 1px solid var(--gray-border); }
+    .tq-photo-frame { width: 110px; height: 110px; }
+    .tq-right { border-left: none; padding: 20px; }
+  }
+
+  @media (max-width: 600px) {
+    #hero { padding: 60px 20px 52px; }
+    .ks-section { padding: 36px 18px; }
+    .ks-section-heading { font-size: 22px; }
+    .cta-band { padding: 48px 20px; }
+    .cta-heading { font-size: 22px; }
+    .stats-bar { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-inner">
+    <div class="hero-badge">
+      <i class="ti ti-award" aria-hidden="true"></i>
+      {{ settings.tagline|default:"Pakundia, Kishoreganj — Premier Coaching Center" }} — Since {{ settings.established_year|default:"2009" }}
+    </div>
+    <h1 class="hero-heading">
+      {{ settings.hero_heading|default:"Build Your Future with" }}<br>
+      <em>{{ settings.academy_name|default:"Pakundia Coaching Center" }}</em>
+    </h1>
+    <p class="hero-sub">{{ settings.hero_subtext|default:"Expert coaching for SSC & HSC students in Physics, Chemistry, Biology and Mathematics. Small batches, experienced teachers, proven results." }}</p>
+    <div class="hero-btns">
+      <a href="{{ settings.enroll_btn_url|default:'#' }}" class="ksa-btn ksa-btn-primary">
+        <i class="ti ti-pencil-plus" aria-hidden="true"></i>
+        {{ settings.enroll_btn_text|default:"Enroll for 2025 Batch" }}
+      </a>
+      {% if settings.phone_primary %}
+      <a href="tel:{{ settings.phone_primary }}" class="ksa-btn ksa-btn-ghost">
+        <i class="ti ti-phone" aria-hidden="true"></i> Call Us Today
+      </a>
+      {% else %}
+      <a href="#location" class="ksa-btn ksa-btn-ghost">
+        <i class="ti ti-phone" aria-hidden="true"></i> Contact Us
+      </a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stat-cell">
+    <div class="stat-num">{{ settings.stat_students|default:"3,000+" }}</div>
+    <div class="stat-lbl">Students Graduated</div>
+  </div>
+  <div class="stat-cell">
+    <div class="stat-num">{{ settings.stat_experience|default:"15+" }} yrs</div>
+    <div class="stat-lbl">Experience</div>
+  </div>
+  <div class="stat-cell">
+    <div class="stat-num">{{ settings.stat_pass_rate|default:"92%" }}</div>
+    <div class="stat-lbl">A+ Pass Rate</div>
+  </div>
+  <div class="stat-cell">
+    <div class="stat-num">{{ settings.stat_teachers|default:"25+" }}</div>
+    <div class="stat-lbl">Expert Teachers</div>
+  </div>
+</div>
+
+<!-- NOTICES -->
+{% if notices or is_teacher %}
+<div id="notices" class="ks-bg-stripe">
+  <div class="ks-section">
+    <div class="ks-section-eyebrow"><i class="ti ti-bell-ringing"></i> Latest Updates</div>
+    <h2 class="ks-section-heading">Notices & Announcements</h2>
+    <p class="ks-section-sub">Important information for students and parents.</p>
+
+    {% if is_teacher %}
+    <button onclick="document.getElementById('modal-add').style.display='flex'"
+      style="margin-bottom:16px; display:inline-flex; align-items:center; gap:6px;
+             background:var(--blue-main); color:#fff; border:none; border-radius:var(--radius-sm);
+             padding:9px 18px; font-size:13px; font-weight:600; cursor:pointer;">
+      <i class="ti ti-plus"></i> New Notice
+    </button>
+    {% endif %}
+
+    <div class="notices-list">
+      {% for notice in notices %}
+      <div class="notice-item">
+        <div class="notice-accent" style="background: {{ notice.type_color }};"></div>
+        <div class="notice-body-wrap">
+          <div class="notice-icon" style="background: {{ notice.type_bg }}; color: {{ notice.type_color }};">
+            <i class="{{ notice.type_icon }}" aria-hidden="true"></i>
+          </div>
+          <div class="notice-content">
+            <div class="notice-header">
+              <span class="notice-title">{{ notice.title }}</span>
+              <span class="notice-type-label"
+                style="background:{{ notice.type_bg }}; color:{{ notice.type_color }}; border-color:{{ notice.type_color }}33;">
+                {{ notice.get_notice_type_display }}
+              </span>
+              {% if notice.is_pinned %}
+              <span class="notice-pin">📌 Pinned</span>
+              {% endif %}
+              {% if is_teacher %}
+              <button onclick="openEdit({{ notice.pk }}, '{{ notice.title|escapejs }}', '{{ notice.body|escapejs }}', '{{ notice.notice_type }}', {{ notice.is_pinned|lower }})"
+                style="margin-left:auto; background:var(--blue-pale); border:1px solid #C8DFF6;
+                       color:var(--blue-main); border-radius:6px; padding:3px 10px;
+                       font-size:12px; cursor:pointer;">
+                <i class="ti ti-edit"></i> Edit
+              </button>
+              <form method="post" action="{% url 'notice_delete' notice.pk %}"
+                    style="display:inline;"
+                    onsubmit="return confirm('Delete this notice?')">
+                {% csrf_token %}
+                <button type="submit"
+                  style="background:#FEE2E2; border:1px solid #FCA5A5; color:#991B1B;
+                         border-radius:6px; padding:3px 10px; font-size:12px; cursor:pointer;">
+                  <i class="ti ti-trash"></i> Delete
+                </button>
+              </form>
+              {% endif %}
+            </div>
+            <div class="notice-text">{{ notice.body|linebreaksbr }}</div>
+            <div class="notice-footer">
+              <span class="notice-meta">
+                <i class="ti ti-calendar-event"></i>
+                {{ notice.published_at|date:"d M Y, g:i A" }}
+              </span>
+              {% if notice.attachment %}
+              <a href="{{ notice.attachment.url }}" target="_blank" class="notice-attachment">
+                <i class="ti ti-paperclip"></i> Download Attachment
+              </a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% if is_teacher %}
+<div id="modal-add" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45);
+     z-index:9999; align-items:center; justify-content:center;">
+  <div style="background:#fff; border-radius:12px; padding:28px; width:100%; max-width:480px; margin:16px;">
+    <h3 style="font-family:var(--font-display); margin-bottom:18px;">New Notice</h3>
+    <form method="post" action="{% url 'notice_add' %}">
+      {% csrf_token %}
+      <input name="title" placeholder="Title" required
+        style="width:100%; padding:9px 12px; border:1px solid var(--gray-border);
+               border-radius:8px; margin-bottom:10px; font-size:13.5px; box-sizing:border-box;">
+      <textarea name="body" placeholder="Notice body..." rows="4" required
+        style="width:100%; padding:9px 12px; border:1px solid var(--gray-border);
+               border-radius:8px; margin-bottom:10px; font-size:13.5px; box-sizing:border-box;"></textarea>
+      <select name="notice_type"
+        style="width:100%; padding:9px 12px; border:1px solid var(--gray-border);
+               border-radius:8px; margin-bottom:10px; font-size:13.5px; box-sizing:border-box;">
+        <option value="general">General</option>
+        <option value="exam">Exam</option>
+        <option value="holiday">Holiday</option>
+        <option value="result">Result</option>
+        <option value="urgent">Urgent</option>
+      </select>
+      <label style="font-size:13px; display:flex; align-items:center; gap:6px; margin-bottom:16px;">
+        <input type="checkbox" name="is_pinned"> Pin this notice
+      </label>
+      <div style="display:flex; gap:10px; justify-content:flex-end;">
+        <button type="button" onclick="document.getElementById('modal-add').style.display='none'"
+          style="padding:8px 18px; border:1px solid var(--gray-border); border-radius:8px;
+                 background:#fff; cursor:pointer; font-size:13px;">Cancel</button>
+        <button type="submit"
+          style="padding:8px 18px; background:var(--blue-main); color:#fff; border:none;
+                 border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">Add Notice</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="modal-edit" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45);
+     z-index:9999; align-items:center; justify-content:center;">
+  <div style="background:#fff; border-radius:12px; padding:28px; width:100%; max-width:480px; margin:16px;">
+    <h3 style="font-family:var(--font-display); margin-bottom:18px;">Edit Notice</h3>
+    <form method="post" id="edit-form" action="">
+      {% csrf_token %}
+      <input id="edit-title" name="title" placeholder="Title" required
+        style="width:100%; padding:9px 12px; border:1px solid var(--gray-border);
+               border-radius:8px; margin-bottom:10px; font-size:13.5px; box-sizing:border-box;">
+      <textarea id="edit-body" name="body" placeholder="Notice body..." rows="4" required
+        style="width:100%; padding:9px 12px; border:1px solid var(--gray-border);
+               border-radius:8px; margin-bottom:10px; font-size:13.5px; box-sizing:border-box;"></textarea>
+      <select id="edit-type" name="notice_type"
+        style="width:100%; padding:9px 12px; border:1px solid var(--gray-border);
+               border-radius:8px; margin-bottom:10px; font-size:13.5px; box-sizing:border-box;">
+        <option value="general">General</option>
+        <option value="exam">Exam</option>
+        <option value="holiday">Holiday</option>
+        <option value="result">Result</option>
+        <option value="urgent">Urgent</option>
+      </select>
+      <label style="font-size:13px; display:flex; align-items:center; gap:6px; margin-bottom:16px;">
+        <input type="checkbox" name="is_pinned" id="edit-pinned"> Pin this notice
+      </label>
+      <div style="display:flex; gap:10px; justify-content:flex-end;">
+        <button type="button" onclick="document.getElementById('modal-edit').style.display='none'"
+          style="padding:8px 18px; border:1px solid var(--gray-border); border-radius:8px;
+                 background:#fff; cursor:pointer; font-size:13px;">Cancel</button>
+        <button type="submit"
+          style="padding:8px 18px; background:var(--blue-main); color:#fff; border:none;
+                 border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function openEdit(pk, title, body, type, pinned) {
+  document.getElementById('edit-form').action = `/notice/${pk}/edit/`;
+  document.getElementById('edit-title').value  = title;
+  document.getElementById('edit-body').value   = body;
+  document.getElementById('edit-type').value   = type;
+  document.getElementById('edit-pinned').checked = pinned;
+  document.getElementById('modal-edit').style.display = 'flex';
+}
+</script>
+{% endif %}
+
+<div class="ks-divider"></div>
+
+<!-- COURSES -->
+<section id="courses" class="ks-bg-white">
+  <div class="ks-section">
+    <div class="ks-section-eyebrow"><i class="ti ti-book-2"></i> What We Teach</div>
+    <h2 class="ks-section-heading">Our Courses</h2>
+    <p class="ks-section-sub">SSC & HSC science coaching — designed for top board results.</p>
+    {% if courses %}
+    <div class="courses-grid">
+      {% for course in courses %}
+      <div class="course-card">
+        <div class="course-icon" style="background: {{ course.icon_bg_color }}; color: {{ course.icon_color }};">
+          <i class="{{ course.icon }}" aria-hidden="true"></i>
+        </div>
+        <div class="course-name">{{ course.name }}</div>
+        <div class="course-desc">{{ course.description }}</div>
+        <div class="course-footer">
+          <span class="course-badge">{{ course.level_display }}</span>
+          {% if course.fee_per_month %}
+          <span class="course-fee"><i class="ti ti-currency-taka" style="font-size:13px;"></i>{{ course.fee_per_month }}/মাস</span>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="ks-empty"><i class="ti ti-book"></i> Courses will be listed here soon.</div>
+    {% endif %}
+  </div>
+</section>
+
+<div class="ks-divider"></div>
+
+<!-- WHY CHOOSE US -->
+<section class="ks-bg-gray">
+  <div class="ks-section">
+    <div class="ks-section-eyebrow"><i class="ti ti-star"></i> Our Edge</div>
+    <h2 class="ks-section-heading">Why Choose Us</h2>
+    <p class="ks-section-sub">What makes Pakundia Coaching Center different from the rest.</p>
+    <div class="features-grid">
+      <div class="feat-card">
+        <div class="feat-icon"><i class="ti ti-users-group"></i></div>
+        <div class="feat-title">Small Batch Classes</div>
+        <div class="feat-desc">Max 25 students per batch for individual attention and better outcomes.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon"><i class="ti ti-chalkboard"></i></div>
+        <div class="feat-title">Experienced Teachers</div>
+        <div class="feat-desc">Post-graduate specialists with 5–20 years of coaching experience.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon"><i class="ti ti-file-certificate"></i></div>
+        <div class="feat-title">Weekly Tests</div>
+        <div class="feat-desc">Regular assessments track progress and prepare students for board exams.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon"><i class="ti ti-notes"></i></div>
+        <div class="feat-title">Handout Materials</div>
+        <div class="feat-desc">Chapter-wise notes, question banks, and model tests for all students.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon"><i class="ti ti-clock-hour-4"></i></div>
+        <div class="feat-title">Flexible Timing</div>
+        <div class="feat-desc">Morning, afternoon, and evening batches to suit all school schedules.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon"><i class="ti ti-message-circle"></i></div>
+        <div class="feat-title">Parent Updates</div>
+        <div class="feat-desc">Regular progress reports and direct communication with parents.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="ks-divider"></div>
+
+<!-- RESULTS -->
+<section id="results" class="ks-bg-white">
+  <div class="ks-section">
+    <div class="ks-section-eyebrow"><i class="ti ti-trophy"></i> Track Record</div>
+    <h2 class="ks-section-heading">
+      Our Results{% if latest_year %} — {{ latest_year }}{% endif %}
+    </h2>
+    <p class="ks-section-sub">Students who enrolled at KSA consistently achieve top board results.</p>
+    {% if results %}
+    <div class="results-grid">
+      {% for result in results %}
+      <div class="result-card">
+        <div class="result-val">{{ result.value }}</div>
+        <div class="result-label">{{ result.label }}</div>
+        <span class="result-tag" style="background: {{ result.tag_bg }}; color: {{ result.tag_color }};">
+          {{ result.tag }}
+        </span>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="ks-empty"><i class="ti ti-trophy"></i> Results coming soon.</div>
+    {% endif %}
+  </div>
+</section>
+
+<div class="ks-divider"></div>
+
+<!-- TEACHERS -->
+<section id="teachers" class="ks-bg-gray">
+  <div class="ks-section">
+    <div class="ks-section-eyebrow"><i class="ti ti-school"></i> Meet the Faculty</div>
+    <h2 class="ks-section-heading">Our Teachers</h2>
+    <p class="ks-section-sub">Dedicated subject specialists committed to your success.</p>
+    {% if teachers %}
+    <div class="teachers-grid">
+      {% for teacher in teachers %}
+      <div class="teacher-card">
+        <div class="teacher-avatar" style="background: {{ teacher.avatar_bg }}; color: {{ teacher.avatar_color }};">
+          {% if teacher.photo %}
+            <img src="{{ teacher.photo.url }}" alt="{{ teacher.name }}">
+          {% else %}
+            {{ teacher.avatar_initials|default:teacher.name|slice:":2"|upper }}
+          {% endif %}
+        </div>
+        <div class="teacher-name">{{ teacher.name }}</div>
+        <div class="teacher-sub">{{ teacher.get_subject_display }} · {{ teacher.qualification }}</div>
+        {% if teacher.designation %}
+        <div class="teacher-designation">{{ teacher.designation }}</div>
+        {% endif %}
+        <div class="teacher-exp">{{ teacher.experience_years }} yrs experience</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="ks-empty"><i class="ti ti-school"></i> Faculty details coming soon.</div>
+    {% endif %}
+  </div>
+</section>
+
+<div class="ks-divider"></div>
+
+<!-- TEACHER QUOTES -->
+<section class="ks-bg-white">
+  <div class="ks-section">
+    <div class="ks-section-eyebrow"><i class="ti ti-message-circle"></i> শিক্ষকদের বার্তা</div>
+    <h2 class="ks-section-heading">আমাদের শিক্ষকরা বলছেন</h2>
+    <p class="ks-section-sub">শিক্ষার্থীদের প্রতি আমাদের শিক্ষকদের অনুপ্রেরণামূলক বার্তা।</p>
+
+    <!-- Rasel Sir — Science -->
+    <div class="tq-card">
+      <div class="tq-photo-col" style="background: var(--blue-pale);">
+        <div class="tq-photo-frame" style="border: 2px solid #C8DFF6;">
+          <!-- Replace src with actual photo path when available -->
+          <img src="/media/teachers/ChatGPT_Image_Jun_22_2026_08_33_49_PM.png"
+               alt="মো. রাসেল স্যার"
+               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+               style="width:100%; height:100%; object-fit:cover; display:block;">
+          <div class="tq-photo-initials" style="display:none; background:#B5D4F4; color:#0C447C; width:100%; height:100%;">রা</div>
+        </div>
+        <div class="tq-subject-label" style="color: var(--blue-mid);">বিজ্ঞান শিক্ষক</div>
+      </div>
+      <div class="tq-right">
+        <div>
+          <span class="tq-badge" style="background: var(--blue-pale); color: var(--blue-dark); border-color: #C8DFF6;">
+            <i class="ti ti-atom" style="font-size:12px;" aria-hidden="true"></i> বিজ্ঞান বিভাগ
+          </span>
+          <span class="tq-qmark">&ldquo;</span>
+          <p class="tq-quote">
+            প্রিয় শিক্ষার্থীরা, বিজ্ঞান মুখস্থ করার বিষয় নয় — বোঝার বিষয়।
+            প্রতিটি সূত্রের পেছনে একটি গল্প আছে। সেই গল্পটা একবার বুঝে গেলে
+            পরীক্ষার হলে আর কিছু ভুলবে না। নিয়মিত পড়ো, প্রশ্ন করো, কখনো ভয় পেয়ো না।
+            তোমাদের সাফল্যই আমার সবচেয়ে বড় পুরস্কার।
+          </p>
+        </div>
+        <div>
+          <div class="tq-divider"></div>
+          <div class="tq-name">মো. রাসেল স্যার</div>
+          <div class="tq-meta">বিজ্ঞান শিক্ষক &nbsp;·&nbsp; ১৫ বছরের অভিজ্ঞতা</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rubel Sir — English -->
+    <div class="tq-card">
+      <div class="tq-photo-col" style="background: #EAF3DE;">
+        <div class="tq-photo-frame" style="border: 2px solid #B8D98F;">
+          <!-- Replace src with actual photo path when available -->
+          <img src="/media/teachers/ChatGPT_Image_Jun_22_2026_08_29_37_PM.png"
+     alt="মো. রবেল স্যার"
+     style="width:100%; height:100%; object-fit:cover; display:block;">
+          <div class="tq-photo-initials" style="display:none; background:#C0DD97; color:#27500A; width:180%; height:180%;">র</div>
+        </div>
+        <div class="tq-subject-label" style="color: #3B6D11;">ইংরেজি শিক্ষক</div>
+      </div>
+      <div class="tq-right">
+        <div>
+          <span class="tq-badge" style="background: #EAF3DE; color: #27500A; border-color: #B8D98F;">
+            <i class="ti ti-language" style="font-size:12px;" aria-hidden="true"></i> ইংরেজি বিভাগ
+          </span>
+          <span class="tq-qmark">&ldquo;</span>
+          <p class="tq-quote">
+            English শেখা কঠিন নয় — শুধু নিয়মিত প্র্যাকটিস দরকার। প্রতিদিন একটু একটু
+            পড়লে ও লিখলে Grammar এবং Writing এ তুমি অবশ্যই ভালো করবে।
+            আমি চাই তোমরা আত্মবিশ্বাসের সাথে পরীক্ষায় বসো এবং A+ পাও —
+            সেটাই আমার সবচেয়ে বড় লক্ষ্য।
+          </p>
+        </div>
+        <div>
+          <div class="tq-divider"></div>
+          <div class="tq-name">মো. রবেল স্যার</div>
+          <div class="tq-meta">ইংরেজি শিক্ষক &nbsp;·&nbsp; ১৫ বছরের অভিজ্ঞতা</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div class="ks-divider"></div>
+
+<!-- BATCH SCHEDULE -->
+<section id="schedule" class="ks-bg-white">
+  <div class="ks-section">
+    <div class="ks-section-eyebrow"><i class="ti ti-calendar-event"></i> Batch Timings</div>
+    <h2 class="ks-section-heading">Class Schedule</h2>
+    <p class="ks-section-sub">Choose a batch that fits your routine — morning, afternoon, or evening.</p>
+    {% if schedules %}
+    <div class="schedule-table-wrap">
+      <table class="schedule-table" aria-label="Batch schedule">
+        <thead>
+          <tr>
+            <th>Batch</th>
+            <th>Course</th>
+            <th>Days</th>
+            <th>Time</th>
+            <th>Slot</th>
+            <th>Teacher</th>
+            <th>Seats</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for sched in schedules %}
+          <tr>
+            <td style="font-weight: 500; color: var(--gray-text);">{{ sched.batch_name }}</td>
+            <td>{{ sched.course.name }}</td>
+            <td>{{ sched.get_days_display }}</td>
+            <td style="white-space: nowrap;">{{ sched.start_time|time:"g:i A" }} – {{ sched.end_time|time:"g:i A" }}</td>
+            <td>
+              <span class="sched-badge {{ sched.time_slot }}">
+                {% if sched.time_slot == 'morning' %}<i class="ti ti-sun"></i>
+                {% elif sched.time_slot == 'afternoon' %}<i class="ti ti-cloud-sun"></i>
+                {% else %}<i class="ti ti-moon"></i>{% endif %}
+                {{ sched.get_time_slot_display }}
+              </span>
+            </td>
+            <td>{{ sched.teacher.name|default:"—" }}</td>
+            <td>
+              {% if sched.is_full %}
+              <span class="sched-seats full">Full</span>
+              {% else %}
+              <span class="sched-seats open">{{ sched.seats_left }} / {{ sched.seats_total }} left</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="ks-empty"><i class="ti ti-calendar-off"></i> Schedule will be posted here.</div>
+    {% endif %}
+  </div>
+</section>
+
+<div class="ks-divider"></div>
+
+<!-- GALLERY -->
+{% if gallery %}
+<section id="gallery" class="ks-bg-gray">
+  <div class="ks-section">
+    <div class="ks-section-eyebrow"><i class="ti ti-photo"></i> Campus Life</div>
+    <h2 class="ks-section-heading">Gallery</h2>
+    <p class="ks-section-sub">A glimpse into life at Pakundia Coaching Center.</p>
+    <div class="gallery-grid">
+      {% for img in gallery %}
+      <div class="gallery-item">
+        <img src="{{ img.image.url }}" alt="{{ img.title }}" loading="lazy">
+        {% if img.caption %}
+        <div class="gallery-item-caption">{{ img.caption }}</div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+<div class="ks-divider"></div>
+{% endif %}
+
+<!-- FAQ -->
+{% if faqs %}
+<section id="faq" class="ks-bg-white">
+  <div class="ks-section">
+    <div class="ks-section-eyebrow"><i class="ti ti-help-circle"></i> FAQ</div>
+    <h2 class="ks-section-heading">Common Questions</h2>
+    <p class="ks-section-sub">Everything parents and students usually ask before enrolling.</p>
+    <div class="faq-list">
+      {% for faq in faqs %}
+      <div class="faq-item">
+        <div class="faq-question" role="button" tabindex="0" aria-expanded="false">
+          <span>{{ faq.question }}</span>
+          <i class="ti ti-chevron-down" aria-hidden="true"></i>
+        </div>
+        <div class="faq-answer">{{ faq.answer|linebreaksbr }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+<div class="ks-divider"></div>
+{% endif %}
+
+<!-- CTA BAND -->
+<div class="cta-band">
+  <div class="cta-inner">
+    <h2 class="cta-heading">Ready to Start Your Journey?</h2>
+    <p class="cta-sub">Admissions open for SSC & HSC 2025 batches. Limited seats available — enroll before they fill up.</p>
+    <div class="cta-btns">
+      <a href="{{ settings.enroll_btn_url|default:'#' }}" class="ksa-btn ksa-btn-primary">
+        <i class="ti ti-pencil-plus" aria-hidden="true"></i>
+        {{ settings.enroll_btn_text|default:"Enroll Now" }}
+      </a>
+      {% if settings.brochure_url and settings.brochure_url != '#' %}
+      <a href="{{ settings.brochure_url }}" class="ksa-btn ksa-btn-ghost" target="_blank">
+        <i class="ti ti-file-description" aria-hidden="true"></i> Download Brochure
+      </a>
+      {% endif %}
+      {% if settings.whatsapp_number %}
+      <a href="https://wa.me/{{ settings.whatsapp_number|cut:'+' }}" class="ksa-btn ksa-btn-ghost" target="_blank" rel="noopener">
+        <i class="ti ti-brand-whatsapp" aria-hidden="true"></i> WhatsApp Us
+      </a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- LOCATION -->
+<section id="location" class="ks-bg-white">
+  <div class="ks-section">
+    <div class="ks-section-eyebrow"><i class="ti ti-map-pin"></i> Visit Us</div>
+    <h2 class="ks-section-heading">Find Us</h2>
+    <p class="ks-section-sub">Conveniently located in Pakundia, Kishoreganj — easy access from nearby areas.</p>
+    <div class="loc-grid">
+      <div class="loc-map-wrap">
+        {% if settings.google_maps_embed_url %}
+          <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d4312.487627604386!2d90.6738184!3d24.3271566!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x375687a2a617418d%3A0xd510db8c34b2ad91!2z4KaV4Kaw4KeN4Kaj4Kar4KeB4Kay4KeAIOCmrOCmv-CmnOCnjeCmnuCmvuCmqCDgpo_gppXgpr7gpqHgp4fgpq7gpr8!5e1!3m2!1sen!2sbd!4v1782100536042!5m2!1sen!2sbd" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        {% else %}
+          <i class="ti ti-map-pin" aria-hidden="true"></i>
+          <span style="font-weight: 600; font-family: var(--font-display);">{{ settings.academy_name|default:"Pakundia Coaching Center" }}</span>
+          <span style="font-size: 12.5px; color: var(--blue-mid);">Pakundia, Kishoreganj</span>
+          {% if settings.google_maps_url %}
+          <a href="{{ settings.google_maps_url }}" target="_blank" rel="noopener"
+             style="font-size: 12.5px; color: var(--blue-main); text-decoration: none; display: flex; align-items: center; gap: 5px; margin-top: 4px;">
+            <i class="ti ti-external-link" aria-hidden="true"></i> Open in Google Maps
+          </a>
+          {% endif %}
+        {% endif %}
+      </div>
+      <div class="loc-details">
+        {% if settings.address %}
+        <div class="loc-row">
+          <div class="loc-row-icon"><i class="ti ti-map-pin" aria-hidden="true"></i></div>
+          <div class="loc-row-text">
+            <strong>Address</strong>
+            <span>{{ settings.address|linebreaksbr }}</span>
+          </div>
+        </div>
+        {% endif %}
+        {% if settings.phone_primary or settings.phone_secondary %}
+        <div class="loc-row">
+          <div class="loc-row-icon"><i class="ti ti-phone" aria-hidden="true"></i></div>
+          <div class="loc-row-text">
+            <strong>Phone{% if settings.whatsapp_number %} / WhatsApp{% endif %}</strong>
+            <span>
+              {% if settings.phone_primary %}<a href="tel:{{ settings.phone_primary }}">{{ settings.phone_primary }}</a>{% endif %}
+              {% if settings.phone_secondary %}<br><a href="tel:{{ settings.phone_secondary }}">{{ settings.phone_secondary }}</a>{% endif %}
+            </span>
+          </div>
+        </div>
+        {% endif %}
+        {% if settings.email %}
+        <div class="loc-row">
+          <div class="loc-row-icon"><i class="ti ti-mail" aria-hidden="true"></i></div>
+          <div class="loc-row-text">
+            <strong>Email</strong>
+            <span><a href="mailto:{{ settings.email }}">{{ settings.email }}</a></span>
+          </div>
+        </div>
+        {% endif %}
+        {% if settings.office_hours %}
+        <div class="loc-row">
+          <div class="loc-row-icon"><i class="ti ti-clock" aria-hidden="true"></i></div>
+          <div class="loc-row-text">
+            <strong>Office Hours</strong>
+            <span>{{ settings.office_hours }}</span>
+          </div>
+        </div>
+        {% endif %}
+        {% if settings.how_to_reach %}
+        <div class="loc-row">
+          <div class="loc-row-icon"><i class="ti ti-bus" aria-hidden="true"></i></div>
+          <div class="loc-row-text">
+            <strong>How to Get Here</strong>
+            <span>{{ settings.how_to_reach }}</span>
+          </div>
+        </div>
+        {% endif %}
+        {% if settings.facebook_url or settings.youtube_url %}
+        <div class="loc-row">
+          <div class="loc-row-icon"><i class="ti ti-share" aria-hidden="true"></i></div>
+          <div class="loc-row-text">
+            <strong>Follow Us</strong>
+            <span>
+              {% if settings.facebook_url %}
+              <a href="{{ settings.facebook_url }}" target="_blank" rel="noopener">
+                <i class="ti ti-brand-facebook"></i> Facebook
+              </a>
+              {% endif %}
+              {% if settings.youtube_url %}
+              {% if settings.facebook_url %} &nbsp;·&nbsp; {% endif %}
+              <a href="{{ settings.youtube_url }}" target="_blank" rel="noopener">
+                <i class="ti ti-brand-youtube"></i> YouTube
+              </a>
+              {% endif %}
+            </span>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.querySelectorAll('.faq-question').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.faq-item');
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item.open').forEach(i => {
+        i.classList.remove('open');
+        i.querySelector('.faq-question').setAttribute('aria-expanded', 'false');
+      });
+      if (!isOpen) {
+        item.classList.add('open');
+        btn.setAttribute('aria-expanded', 'true');
+      }
+    });
+    btn.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); btn.click(); }
+    });
+  });
+</script>
+{% endblock %}

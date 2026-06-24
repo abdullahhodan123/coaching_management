@@ -1,0 +1,306 @@
+{% extends "base.html" %}
+{% block title %}Create Exam{% endblock %}
+{% block page_title %}Create New Exam{% endblock %}
+
+{% block extra_css %}
+<style>
+  .form-card {
+    background: var(--white);
+    border: 0.5px solid var(--gray-border);
+    border-radius: var(--radius);
+    padding: 28px;
+    max-width: 720px;
+  }
+
+  .section-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--blue-dark);
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 0.5px solid var(--gray-border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title i { font-size: 17px; }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .form-grid .span-2 { grid-column: span 2; }
+
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group label {
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--gray-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .form-group input,
+  .form-group select {
+    padding: 9px 13px;
+    border: 1px solid var(--gray-border);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    color: var(--gray-text);
+    background: var(--white);
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .form-group input:focus,
+  .form-group select:focus {
+    border-color: var(--blue-mid);
+    box-shadow: 0 0 0 3px rgba(55,138,221,0.12);
+  }
+
+  .subject-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+
+  .subject-row {
+    display: grid;
+    grid-template-columns: 1fr 90px 90px 100px 36px;
+    gap: 10px;
+    align-items: center;
+    background: var(--gray-bg);
+    border: 0.5px solid var(--gray-border);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+  }
+
+  .subject-row input {
+    font-size: 13.5px;
+    padding: 7px 11px;
+    border: 1px solid var(--gray-border);
+    border-radius: var(--radius-sm);
+    color: var(--gray-text);
+    background: var(--white);
+    outline: none;
+    width: 100%;
+    transition: border-color 0.15s;
+  }
+  .subject-row input:focus { border-color: var(--blue-mid); }
+  .subject-row input::placeholder { color: var(--gray-border); }
+
+  .optional-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .optional-cell input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: var(--blue-main);
+    flex-shrink: 0;
+  }
+  .optional-cell span {
+    font-size: 12px;
+    color: var(--gray-muted);
+    white-space: nowrap;
+  }
+
+  .btn-remove-subject {
+    background: var(--red-bg);
+    border: 0.5px solid var(--red-border);
+    color: var(--red-text);
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    flex-shrink: 0;
+    transition: background 0.15s;
+  }
+  .btn-remove-subject:hover { background: #f7c1c1; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 18px;
+    border-radius: var(--radius-sm);
+    font-size: 13.5px;
+    font-weight: 500;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn i { font-size: 16px; }
+  .btn-primary { background: var(--blue-main); color: #fff; }
+  .btn-primary:hover { background: var(--blue-dark); }
+  .btn-outline {
+    background: transparent;
+    color: var(--blue-main);
+    border: 1px solid var(--blue-light);
+  }
+  .btn-outline:hover { background: var(--blue-pale); }
+  .btn-ghost {
+    background: transparent;
+    color: var(--gray-muted);
+    border: 1px solid var(--gray-border);
+  }
+  .btn-ghost:hover { background: var(--gray-bg); }
+
+  .form-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-top: 20px;
+    border-top: 0.5px solid var(--gray-border);
+    flex-wrap: wrap;
+  }
+
+  .subject-col-labels {
+    display: grid;
+    grid-template-columns: 1fr 90px 90px 100px 36px;
+    gap: 10px;
+    padding: 0 12px;
+    margin-bottom: 6px;
+  }
+  .subject-col-labels span {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--gray-muted);
+  }
+  .subject-col-labels span.center { text-align: center; }
+
+  @media (max-width: 600px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .form-grid .span-2 { grid-column: span 1; }
+    .subject-row {
+      grid-template-columns: 1fr 36px;
+      grid-template-rows: auto auto auto;
+    }
+    .subject-row input:nth-child(2),
+    .subject-row input:nth-child(3),
+    .optional-cell { grid-column: 1; }
+    .btn-remove-subject { grid-row: 1; grid-column: 2; align-self: start; }
+    .subject-col-labels { display: none; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<form method="post">
+  {% csrf_token %}
+  <div class="form-card">
+
+    <!-- Exam Info -->
+    <div class="section-title"><i class="ti ti-file-description"></i> Exam Information</div>
+    <div class="form-grid">
+      <div class="form-group span-2">
+        <label>Exam Name</label>
+        <input type="text" name="name" placeholder="e.g. Monthly Exam — July 2025" required>
+      </div>
+      <div class="form-group">
+        <label>Exam Type</label>
+        <select name="exam_type" required>
+          <option value="">— Select —</option>
+          <option value="weekly">Weekly Test</option>
+          <option value="monthly">Monthly Test</option>
+          <option value="midterm">Mid Term</option>
+          <option value="final">Final Exam</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" name="date" required>
+      </div>
+      <div class="form-group span-2">
+        <label>Classroom</label>
+        <select name="classroom" required>
+          <option value="">— Select —</option>
+          {% for cls in classrooms %}
+          <option value="{{ cls.pk }}">{{ cls.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <!-- Subjects -->
+    <div class="section-title"><i class="ti ti-books"></i> Add Subjects</div>
+
+    <div class="subject-col-labels">
+      <span>Subject Name</span>
+      <span class="center">Full Marks</span>
+      <span class="center">Pass Marks</span>
+      <span class="center">Optional</span>
+      <span></span>
+    </div>
+
+    <div class="subject-list" id="subjectList">
+      <div class="subject-row">
+        <input type="text" name="subject_name[]" placeholder="e.g. English" required>
+        <input type="number" name="full_marks[]" value="100" min="1" required>
+        <input type="number" name="pass_marks[]" value="33" min="1" required>
+        <div class="optional-cell">
+          <input type="checkbox" name="is_optional[]" value="0">
+          <span>Yes</span>
+        </div>
+        <button type="button" class="btn-remove-subject" onclick="removeSubject(this)" title="Remove">
+          <i class="ti ti-x"></i>
+        </button>
+      </div>
+    </div>
+
+    <button type="button" class="btn btn-outline" onclick="addSubject()" style="margin-bottom:24px;">
+      <i class="ti ti-plus"></i> Add Another Subject
+    </button>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">
+        <i class="ti ti-device-floppy"></i> Create Exam
+      </button>
+      <a href="{% url 'exams:exam_list' %}" class="btn btn-ghost">Cancel</a>
+    </div>
+
+  </div>
+</form>
+
+<script>
+  function addSubject() {
+    const list = document.getElementById('subjectList');
+    const row = document.createElement('div');
+    row.className = 'subject-row';
+    row.innerHTML = `
+      <input type="text" name="subject_name[]" placeholder="Subject Name" required>
+      <input type="number" name="full_marks[]" value="100" min="1" required>
+      <input type="number" name="pass_marks[]" value="33" min="1" required>
+      <div class="optional-cell">
+        <input type="checkbox" name="is_optional[]" value="0">
+        <span>Yes</span>
+      </div>
+      <button type="button" class="btn-remove-subject" onclick="removeSubject(this)" title="Remove">
+        <i class="ti ti-x"></i>
+      </button>`;
+    list.appendChild(row);
+    updateOptionalIndexes();
+    row.querySelector('input').focus();
+  }
+
+  function removeSubject(button) {
+    const row = button.closest('.subject-row');
+    if (row) {
+      row.remove();
+      updateOptionalIndexes();
+    }
+  }
+
+  function updateOptionalIndexes() {
+    document.querySelectorAll('input[name="is_optional[]"]').forEach((checkbox, index) => {
+      checkbox.value = String(index);
+    });
+  }
+</script>
+{% endblock %}

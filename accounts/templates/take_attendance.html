@@ -1,0 +1,430 @@
+{% extends 'base.html' %}
+{% block title %}Attendance — {{ classroom.name }}{% endblock %}
+{% block page_title %}Attendance — {{ classroom.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .att-page { max-width: 1000px; margin: 0 auto; }
+
+  /* ── Top bar ── */
+  .att-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .att-topbar h1 { font-size: 20px; font-weight: 600; color: var(--blue-dark); }
+  .att-topbar p  { font-size: 13px; color: var(--gray-muted); margin-top: 2px; }
+
+  .att-meta { display: flex; gap: 8px; flex-wrap: wrap; }
+  .att-chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 5px 12px; border-radius: 999px; font-size: 12.5px; font-weight: 500;
+    border: 0.5px solid;
+  }
+  .att-chip.blue   { background: var(--blue-pale);  color: var(--blue-dark);  border-color: var(--blue-light); }
+  .att-chip.amber  { background: var(--amber-bg);   color: var(--amber-text); border-color: var(--amber-border); }
+  .att-chip.green  { background: var(--green-bg);   color: var(--green-text); border-color: var(--green-border); }
+
+  /* ── Summary cards ── */
+  .att-summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .att-sum-card {
+    background: var(--white);
+    border: 0.5px solid var(--gray-border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .att-sum-icon {
+    width: 40px; height: 40px; border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center; font-size: 20px;
+    flex-shrink: 0;
+  }
+  .att-sum-card .num { font-size: 22px; font-weight: 600; line-height: 1.2; }
+  .att-sum-card .lbl { font-size: 12px; color: var(--gray-muted); margin-top: 2px; }
+
+  /* ── Quick actions ── */
+  .att-quick {
+    display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap;
+    align-items: center; justify-content: space-between;
+  }
+  .att-quick-left { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .quick-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px; border-radius: var(--radius-sm);
+    font-size: 13px; font-weight: 500; cursor: pointer;
+    border: 0.5px solid; background: var(--white);
+    transition: opacity 0.15s;
+  }
+  .quick-btn:hover { opacity: 0.8; }
+  .quick-btn.present { color: var(--green-text); border-color: var(--green-border); }
+  .quick-btn.absent  { color: var(--red-text);   border-color: var(--red-border);   }
+
+  /* Live counter */
+  .live-counter {
+    display: flex; gap: 8px;
+  }
+  .lc {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 12.5px; font-weight: 500;
+    padding: 5px 10px; border-radius: var(--radius-sm); border: 0.5px solid;
+  }
+  .lc.p { background: var(--green-bg); color: var(--green-text); border-color: var(--green-border); }
+  .lc.a { background: var(--red-bg);   color: var(--red-text);   border-color: var(--red-border);   }
+  .lc.l { background: var(--amber-bg);  color: var(--amber-text); border-color: var(--amber-border); }
+
+  /* ── Main table ── */
+  .att-card {
+    background: var(--white);
+    border: 0.5px solid var(--gray-border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+  .att-card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 18px;
+    background: var(--gray-bg);
+    border-bottom: 0.5px solid var(--gray-border);
+  }
+  .att-card-header span { font-size: 13px; font-weight: 500; color: var(--gray-text); }
+
+  .att-table { width: 100%; border-collapse: collapse; }
+  .att-table thead th {
+    padding: 11px 16px; text-align: left;
+    font-size: 11.5px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--gray-muted);
+    background: var(--gray-bg);
+    border-bottom: 0.5px solid var(--gray-border);
+  }
+  .att-table tbody tr { border-bottom: 0.5px solid var(--gray-border); transition: background 0.1s; }
+  .att-table tbody tr:last-child { border-bottom: none; }
+  .att-table tbody tr:hover { background: #fafaf9; }
+  .att-table td { padding: 12px 16px; font-size: 13.5px; vertical-align: middle; }
+
+  .att-avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: var(--blue-pale); color: var(--blue-dark);
+    font-size: 12px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .att-name-cell { display: flex; align-items: center; gap: 10px; }
+  .att-name { font-weight: 500; font-size: 14px; color: var(--gray-text); }
+
+  /* Status radio buttons */
+  .status-group { display: flex; gap: 6px; }
+  .status-group input[type="radio"] { display: none; }
+  .status-group label {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 5px 12px; border-radius: 999px;
+    font-size: 12.5px; font-weight: 500; cursor: pointer;
+    border: 0.5px solid var(--gray-border);
+    background: #fff; color: var(--gray-muted);
+    transition: all 0.15s; user-select: none;
+  }
+  .status-group label i { font-size: 14px; }
+  .status-group label:hover { border-color: var(--gray-text); color: var(--gray-text); }
+  .status-group input[value="present"]:checked + label { background: var(--green-bg); border-color: var(--green-border); color: var(--green-text); }
+  .status-group input[value="absent"]:checked  + label { background: var(--red-bg);   border-color: var(--red-border);   color: var(--red-text);   }
+  .status-group input[value="late"]:checked    + label { background: var(--amber-bg);  border-color: var(--amber-border); color: var(--amber-text); }
+
+  /* ── Summary table ── */
+  .sum-table { width: 100%; border-collapse: collapse; }
+  .sum-table thead th {
+    padding: 11px 16px; text-align: left;
+    font-size: 11.5px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--gray-muted); background: var(--gray-bg);
+    border-bottom: 0.5px solid var(--gray-border);
+  }
+  .sum-table tbody tr { border-bottom: 0.5px solid var(--gray-border); }
+  .sum-table tbody tr:last-child { border-bottom: none; }
+  .sum-table td { padding: 11px 16px; font-size: 13.5px; vertical-align: middle; }
+
+  .s-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 10px; border-radius: 999px;
+    font-size: 12px; font-weight: 600; border: 0.5px solid;
+  }
+  .s-badge.p { background: var(--green-bg); color: var(--green-text); border-color: var(--green-border); }
+  .s-badge.a { background: var(--red-bg);   color: var(--red-text);   border-color: var(--red-border);   }
+  .s-badge.l { background: var(--amber-bg);  color: var(--amber-text); border-color: var(--amber-border); }
+
+  .pct-bar {
+    height: 6px; border-radius: 999px;
+    background: var(--gray-border); overflow: hidden; min-width: 80px;
+  }
+  .pct-fill { height: 100%; border-radius: 999px; background: var(--green-text); }
+
+  /* Save button */
+  .att-footer {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 18px;
+    border-top: 0.5px solid var(--gray-border);
+    background: var(--gray-bg);
+  }
+  .btn-save {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 22px; background: var(--blue-main);
+    color: #fff; border: none; border-radius: var(--radius-sm);
+    font-size: 14px; font-weight: 500; cursor: pointer; transition: background 0.15s;
+  }
+  .btn-save:hover { background: var(--blue-dark); }
+
+  .btn-report {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px; background: var(--white);
+    color: var(--gray-text); border: 0.5px solid var(--gray-border);
+    border-radius: var(--radius-sm); font-size: 13.5px;
+    text-decoration: none; transition: background 0.15s;
+  }
+  .btn-report:hover { background: var(--gray-bg); }
+
+  @media (max-width: 640px) {
+    .att-summary { grid-template-columns: repeat(2, 1fr); }
+    .status-group label span { display: none; }
+    .status-group label { padding: 6px 10px; }
+    .att-table thead th:nth-child(3) { display: none; }
+    .att-table td:nth-child(3)       { display: none; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="att-page">
+
+  <!-- Top -->
+  <div class="att-topbar">
+    <div>
+      <h1><i class="ti ti-clipboard-check" style="font-size:20px; vertical-align:-2px; margin-right:6px;" aria-hidden="true"></i>{{ classroom.name }}</h1>
+      <p>Attendance sheet · {{ today|date:"l, d F Y" }}</p>
+    </div>
+    <div class="att-meta">
+      <span class="att-chip blue"><i class="ti ti-calendar"></i> {{ today|date:"d M Y" }}</span>
+      {% if already_taken %}
+      <span class="att-chip amber"><i class="ti ti-pencil"></i> Edit mode</span>
+      {% else %}
+      <span class="att-chip green"><i class="ti ti-circle-plus"></i> New</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Summary cards -->
+  <div class="att-summary">
+    <div class="att-sum-card">
+      <div class="att-sum-icon" style="background:var(--blue-pale); color:var(--blue-main);">
+        <i class="ti ti-users"></i>
+      </div>
+      <div>
+        <div class="num" style="color:var(--blue-dark);">{{ students.count }}</div>
+        <div class="lbl">Total Students</div>
+      </div>
+    </div>
+    <div class="att-sum-card">
+      <div class="att-sum-icon" style="background:var(--green-bg); color:var(--green-text);">
+        <i class="ti ti-circle-check"></i>
+      </div>
+      <div>
+        <div class="num" style="color:var(--green-text);">{{ total_present }}</div>
+        <div class="lbl">Total Present</div>
+      </div>
+    </div>
+    <div class="att-sum-card">
+      <div class="att-sum-icon" style="background:var(--red-bg); color:var(--red-text);">
+        <i class="ti ti-circle-x"></i>
+      </div>
+      <div>
+        <div class="num" style="color:var(--red-text);">{{ total_absent }}</div>
+        <div class="lbl">Total Absent</div>
+      </div>
+    </div>
+    <div class="att-sum-card">
+      <div class="att-sum-icon" style="background:var(--amber-bg); color:var(--amber-text);">
+        <i class="ti ti-clock-pause"></i>
+      </div>
+      <div>
+        <div class="num" style="color:var(--amber-text);">{{ total_late }}</div>
+        <div class="lbl">Total Late</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Attendance form -->
+  <form method="post">
+    {% csrf_token %}
+
+    <!-- Quick actions + live counter -->
+    <div class="att-quick">
+      <div class="att-quick-left">
+        <button type="button" class="quick-btn present" onclick="markAll('present')">
+          <i class="ti ti-checks"></i> All Present
+        </button>
+        <button type="button" class="quick-btn absent" onclick="markAll('absent')">
+          <i class="ti ti-x"></i> All Absent
+        </button>
+      </div>
+      <div class="live-counter">
+        <span class="lc p"><i class="ti ti-circle-check"></i> <strong id="cnt-p">0</strong></span>
+        <span class="lc a"><i class="ti ti-circle-x"></i>    <strong id="cnt-a">0</strong></span>
+        <span class="lc l"><i class="ti ti-clock-pause"></i> <strong id="cnt-l">0</strong></span>
+      </div>
+    </div>
+
+    <div class="att-card">
+      <div class="att-card-header">
+        <span><i class="ti ti-list-check" style="vertical-align:-2px; margin-right:5px;" aria-hidden="true"></i>Today's Attendance</span>
+        <span style="font-size:12.5px; color:var(--gray-muted);">{{ students.count }} student{{ students.count|pluralize }}</span>
+      </div>
+
+      <table class="att-table">
+        <thead>
+          <tr>
+            <th style="width:40px;">#</th>
+            <th>Student</th>
+            <th>School</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in student_summary %}
+          <tr>
+            <td style="color:var(--gray-muted); font-size:13px;">{{ forloop.counter }}</td>
+            <td>
+              <div class="att-name-cell">
+                <div class="att-avatar">{{ item.student.full_name|slice:":2"|upper }}</div>
+                <div class="att-name">{{ item.student.full_name }}</div>
+              </div>
+            </td>
+            <td style="font-size:13px; color:var(--gray-muted);">{{ item.student.school_name }}</td>
+            <td>
+              <div class="status-group">
+                <input type="radio" name="status_{{ item.student.id }}" id="p_{{ item.student.id }}" value="present"
+                  {% if item.today == 'present' %}checked{% endif %}>
+                <label for="p_{{ item.student.id }}"><i class="ti ti-circle-check"></i><span> Present</span></label>
+
+                <input type="radio" name="status_{{ item.student.id }}" id="a_{{ item.student.id }}" value="absent"
+                  {% if item.today == 'absent' or item.today == None %}checked{% endif %}>
+                <label for="a_{{ item.student.id }}"><i class="ti ti-circle-x"></i><span> Absent</span></label>
+
+                <input type="radio" name="status_{{ item.student.id }}" id="l_{{ item.student.id }}" value="late"
+                  {% if item.today == 'late' %}checked{% endif %}>
+                <label for="l_{{ item.student.id }}"><i class="ti ti-clock-pause"></i><span> Late</span></label>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="4" style="text-align:center; padding:32px; color:var(--gray-muted);">
+              <i class="ti ti-users-off" style="font-size:28px; display:block; margin-bottom:8px;"></i>
+              No approved students in this classroom.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      {% if students %}
+      <div class="att-footer">
+        <button type="submit" class="btn-save">
+          <i class="ti ti-device-floppy"></i>
+          {% if already_taken %}Update Attendance{% else %}Save Attendance{% endif %}
+        </button>
+        <a href="{ }" class="btn-report">
+          <i class="ti ti-chart-bar"></i> View Report
+        </a>
+      </div>
+      {% endif %}
+    </div>
+  </form>
+
+  <!-- Summary table -->
+  <div class="att-card">
+    <div class="att-card-header">
+      <span><i class="ti ti-chart-bar" style="vertical-align:-2px; margin-right:5px;" aria-hidden="true"></i>Attendance Summary</span>
+      <span style="font-size:12.5px; color:var(--gray-muted);">{{ total_days }} day{{ total_days|pluralize }} recorded</span>
+    </div>
+    <table class="sum-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Student</th>
+          <th>Present</th>
+          <th>Absent</th>
+          <th>Late</th>
+          <th>Attendance %</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in student_summary %}
+        {% with total=item.present|add:item.absent|add:item.late %}
+        <tr>
+          <td style="color:var(--gray-muted); font-size:13px;">{{ forloop.counter }}</td>
+          <td>
+            <div class="att-name-cell">
+              <div class="att-avatar">{{ item.student.full_name|slice:":2"|upper }}</div>
+              <div class="att-name">{{ item.student.full_name }}</div>
+            </div>
+          </td>
+          <td><span class="s-badge p"><i class="ti ti-circle-check"></i> {{ item.present }}</span></td>
+          <td><span class="s-badge a"><i class="ti ti-circle-x"></i> {{ item.absent }}</span></td>
+          <td><span class="s-badge l"><i class="ti ti-clock-pause"></i> {{ item.late }}</span></td>
+          <td>
+            {% if total > 0 %}
+            {% widthratio item.present total 100 as pct %}
+            <div style="display:flex; align-items:center; gap:8px;">
+              <div class="pct-bar"><div class="pct-fill" style="width:{{ pct }}%;"></div></div>
+              <span style="font-size:13px; font-weight:500; color:var(--gray-text);">{{ pct }}%</span>
+            </div>
+            {% else %}
+            <span style="color:var(--gray-muted); font-size:13px;">—</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endwith %}
+        {% empty %}
+        <tr>
+          <td colspan="6" style="text-align:center; padding:24px; color:var(--gray-muted);">No data yet.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+  function updateCounters() {
+    let p = 0, a = 0, l = 0;
+    document.querySelectorAll('.status-group').forEach(g => {
+      const checked = g.querySelector('input[type="radio"]:checked');
+      if (!checked) return;
+      if (checked.value === 'present') p++;
+      else if (checked.value === 'absent') a++;
+      else if (checked.value === 'late')   l++;
+    });
+    document.getElementById('cnt-p').textContent = p;
+    document.getElementById('cnt-a').textContent = a;
+    document.getElementById('cnt-l').textContent = l;
+  }
+
+  function markAll(status) {
+    document.querySelectorAll(`input[value="${status}"]`).forEach(r => r.checked = true);
+    updateCounters();
+  }
+
+  document.querySelectorAll('.status-group input[type="radio"]').forEach(r => {
+    r.addEventListener('change', updateCounters);
+  });
+
+  updateCounters();
+</script>
+{% endblock %}

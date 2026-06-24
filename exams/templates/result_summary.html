@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+{% block title %}Result Summary{% endblock %}
+{% block page_title %}Result — {{ exam.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 7px 15px; border-radius: var(--radius-sm);
+    font-size: 13px; font-weight: 500;
+    text-decoration: none; border: none; cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn i { font-size: 15px; }
+  .btn-outline { background: transparent; color: var(--blue-main); border: 1px solid var(--blue-light); }
+  .btn-outline:hover { background: var(--blue-pale); }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px; margin-bottom: 24px;
+  }
+  .stat-card {
+    background: var(--white); border: 0.5px solid var(--gray-border);
+    border-radius: var(--radius); padding: 16px 18px;
+  }
+  .stat-card .stat-val { font-size: 26px; font-weight: 700; color: var(--blue-dark); line-height: 1.1; }
+  .stat-card .stat-label { font-size: 11.5px; color: var(--gray-muted); margin-top: 4px; }
+
+  .card {
+    background: var(--white); border: 0.5px solid var(--gray-border);
+    border-radius: var(--radius); overflow: hidden; margin-bottom: 20px;
+  }
+  .card-header {
+    padding: 13px 20px; border-bottom: 0.5px solid var(--gray-border);
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--gray-bg);
+  }
+  .card-header h2 {
+    font-size: 14px; font-weight: 600; color: var(--blue-dark);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .card-header h2 i { font-size: 17px; }
+
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    font-size: 11.5px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.05em; color: var(--gray-muted);
+    padding: 10px 16px; text-align: left;
+    border-bottom: 0.5px solid var(--gray-border);
+    background: var(--gray-bg); white-space: nowrap;
+  }
+  td { padding: 11px 16px; font-size: 13.5px; border-bottom: 0.5px solid var(--gray-border); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--blue-pale); }
+
+  .serial-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; border-radius: 50%;
+    font-size: 12px; font-weight: 700;
+    background: var(--blue-pale); color: var(--blue-dark);
+    border: 1.5px solid var(--blue-light);
+  }
+  .serial-badge.gold   { background: #FFF8DC; color: #92610A; border-color: #F5C842; }
+  .serial-badge.silver { background: #F3F3F3; color: #555;    border-color: #C0C0C0; }
+  .serial-badge.bronze { background: #FFF0E6; color: #7A3B1E; border-color: #CD7F32; }
+
+  .badge {
+    display: inline-flex; align-items: center;
+    padding: 3px 10px; border-radius: 999px;
+    font-size: 11.5px; font-weight: 500;
+  }
+  .badge-green  { background: var(--green-bg); color: var(--green-text); border: 0.5px solid var(--green-border); }
+  .badge-red    { background: var(--red-bg);   color: var(--red-text);   border: 0.5px solid var(--red-border);   }
+  .badge-blue   { background: var(--blue-pale); color: var(--blue-dark);  border: 0.5px solid var(--blue-light);  }
+  .badge-amber  { background: var(--amber-bg);  color: var(--amber-text); border: 0.5px solid var(--amber-border);}
+
+  /* Subject summary cards */
+  .subject-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 14px; padding: 16px;
+  }
+  .subj-card {
+    border: 0.5px solid var(--gray-border);
+    border-radius: var(--radius-sm); padding: 14px 16px;
+    background: var(--gray-bg);
+  }
+  .subj-card-name {
+    font-size: 13.5px; font-weight: 600; color: var(--blue-dark);
+    margin-bottom: 10px; padding-bottom: 8px;
+    border-bottom: 0.5px solid var(--gray-border);
+  }
+  .subj-row {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 12.5px; color: var(--gray-muted); margin-bottom: 5px;
+  }
+  .subj-row strong { color: var(--gray-text); }
+  .subj-row .up { color: var(--green-text); font-weight: 600; }
+  .subj-row .down { color: var(--red-text); font-weight: 600; }
+
+  .page-actions {
+    display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;
+    align-items: center;
+  }
+  .page-actions h1 { font-size: 13px; color: var(--gray-muted); flex: 1; }
+
+  .gpa-pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 13px; font-weight: 700; color: var(--blue-dark);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-actions">
+  <h1>{{ exam.classroom.name }} · {{ exam.date|date:"d M Y" }} · {{ exam.get_exam_type_display }}</h1>
+  <a href="{% url 'exams:exam_mark_entry' exam.pk %}" class="btn btn-outline">
+    <i class="ti ti-edit"></i> নম্বর সম্পাদনা
+  </a>
+  <a href="{% url 'exams:exam_detail' exam.pk %}" class="btn btn-outline">
+    <i class="ti ti-arrow-left"></i> Exam Detail
+  </a>
+</div>
+
+<!-- Stats -->
+<div class="summary-grid">
+  <div class="stat-card">
+    <div class="stat-val">{{ results.count }}</div>
+    <div class="stat-label">মোট Participant</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-val">{{ subjects|length }}</div>
+    <div class="stat-label">মোট Subject</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-val" style="color:var(--green-text);">
+      {% with pass_count=0 %}
+        {% for r in results %}{% if not r.is_failed %}{{ forloop.counter0|add:1 }}{% endif %}{% endfor %}
+      {% endwith %}
+    </div>
+    <div class="stat-label">Pass</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-val" style="color:var(--red-text);">
+      {% for r in results %}{% if r.is_failed %}{{ forloop.counter0|add:1 }}{% endif %}{% endfor %}
+    </div>
+    <div class="stat-label">Fail</div>
+  </div>
+</div>
+
+<!-- Merit List -->
+<div class="card">
+  <div class="card-header">
+    <h2><i class="ti ti-trophy"></i> মেধাক্রম (Merit List)</h2>
+  </div>
+  <div style="overflow-x:auto;">
+    <table>
+      <thead>
+        <tr>
+          <th>Serial</th>
+          <th>Student</th>
+          {% for subject in subjects %}
+          <th>
+            {{ subject.name }}
+            {% if subject.is_optional %}
+              <div style="font-size:10px; color:var(--red-text); font-weight:600;">Optional</div>
+            {% endif %}
+          </th>
+          {% endfor %}
+          <th>মোট</th>
+          <th>%</th>
+          <th>GPA</th>
+          <th>Grade</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for result in results %}
+        <tr>
+          <td>
+            <span class="serial-badge {% if result.serial == 1 %}gold{% elif result.serial == 2 %}silver{% elif result.serial == 3 %}bronze{% endif %}">
+              {{ result.serial|default:"—" }}
+            </span>
+          </td>
+          <td>
+            <strong>{{ result.student.full_name }}</strong>
+            {% if result.best_subject %}
+            <div style="font-size:11px; color:var(--gray-muted); margin-top:2px;">
+              সেরা: {{ result.best_subject.subject.name }}
+            </div>
+            {% endif %}
+          </td>
+          {% for subject in subjects %}
+            {% for entry in result.mark_entries.all %}
+              {% if entry.subject == subject %}
+              <td style="text-align:center;">
+                <span {% if not entry.is_passed %}style="color:var(--red-text); font-weight:600;"{% endif %}>
+                  {{ entry.marks_obtained }}
+                </span>
+              </td>
+              {% endif %}
+            {% endfor %}
+          {% endfor %}
+          <td><strong>{{ result.total_marks }} / {{ result.total_full_marks }}</strong></td>
+          <td>{{ result.percentage }}%</td>
+          <td><span class="gpa-pill">{{ result.gpa }}</span></td>
+          <td><span class="badge badge-blue">{{ result.letter_grade }}</span></td>
+          <td>
+            {% if result.is_failed %}
+              <span class="badge badge-red">Fail</span>
+            {% else %}
+              <span class="badge badge-green">Pass</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="{{ subjects|length|add:8 }}" style="text-align:center; color:var(--gray-muted); padding:32px;">
+            কোনো result নেই।
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Subject Summary -->
+<div class="card">
+  <div class="card-header">
+    <h2><i class="ti ti-chart-bar"></i> Subject-ভিত্তিক Summary</h2>
+  </div>
+  <div class="subject-summary-grid">
+    {% for item in subject_summary %}
+    <div class="subj-card">
+      <div class="subj-card-name">{{ item.subject.name }} <span style="font-size:11px; color:var(--gray-muted);">(পূর্ণ: {{ item.subject.full_marks }})</span></div>
+      {% if item.best %}
+      <div class="subj-row">
+        <span>সর্বোচ্চ</span>
+        <span class="up">{{ item.best.marks_obtained }} — {{ item.best.result.student.full_name }}</span>
+      </div>
+      <div class="subj-row">
+        <span>সর্বনিম্ন</span>
+        <span class="down">{{ item.worst.marks_obtained }} — {{ item.worst.result.student.full_name }}</span>
+      </div>
+      <div class="subj-row">
+        <span>গড়</span>
+        <strong>{{ item.avg }}</strong>
+      </div>
+      {% else %}
+      <div style="font-size:12.5px; color:var(--gray-muted);">কোনো নম্বর নেই।</div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{% endblock %}

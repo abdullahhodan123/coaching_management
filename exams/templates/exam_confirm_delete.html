@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Exam মুছুন{% endblock %}
+{% block page_title %}Exam মুছে ফেলুন{% endblock %}
+
+{% block extra_css %}
+<style>
+  .confirm-card {
+    max-width: 480px;
+    background: var(--white); border: 0.5px solid var(--red-border);
+    border-radius: var(--radius); padding: 32px; text-align: center;
+  }
+  .confirm-icon {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: var(--red-bg); display: flex;
+    align-items: center; justify-content: center;
+    margin: 0 auto 20px;
+  }
+  .confirm-icon i { font-size: 32px; color: var(--red-text); }
+  .confirm-card h2 { font-size: 18px; font-weight: 600; color: var(--gray-text); margin-bottom: 10px; }
+  .confirm-card p { font-size: 13.5px; color: var(--gray-muted); margin-bottom: 24px; line-height: 1.6; }
+  .confirm-name {
+    display: inline-block; background: var(--red-bg);
+    color: var(--red-text); border: 0.5px solid var(--red-border);
+    border-radius: var(--radius-sm); padding: 4px 12px;
+    font-weight: 600; font-size: 14px; margin-bottom: 20px;
+  }
+  .btn-row { display: flex; gap: 10px; justify-content: center; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 20px; border-radius: var(--radius-sm);
+    font-size: 13.5px; font-weight: 500;
+    text-decoration: none; border: none; cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn i { font-size: 16px; }
+  .btn-danger { background: var(--red-text); color: #fff; }
+  .btn-danger:hover { opacity: 0.88; }
+  .btn-ghost { background: transparent; color: var(--gray-muted); border: 1px solid var(--gray-border); }
+  .btn-ghost:hover { background: var(--gray-bg); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="confirm-card">
+  <div class="confirm-icon"><i class="ti ti-trash"></i></div>
+  <h2>নিশ্চিত করুন</h2>
+  <p>আপনি কি সত্যিই এই exam এবং এর সকল subject ও result মুছে ফেলতে চান?</p>
+  <div class="confirm-name">{{ exam.name }}</div>
+  <p style="color:var(--red-text); font-size:12.5px;">এই কাজ আর ফেরানো যাবে না।</p>
+  <form method="post">
+    {% csrf_token %}
+    <div class="btn-row">
+      <button type="submit" class="btn btn-danger"><i class="ti ti-trash"></i> হ্যাঁ, মুছে ফেলুন</button>
+      <a href="{% url 'exams:exam_detail' exam.pk %}" class="btn btn-ghost">বাতিল</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Subject যোগ করুন{% endblock %}
+{% block page_title %}Subject যোগ — {{ exam.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .form-card {
+    max-width: 480px; background: var(--white);
+    border: 0.5px solid var(--gray-border);
+    border-radius: var(--radius); padding: 28px;
+  }
+  .form-group { display: flex; flex-direction: column; gap: 5px; margin-bottom: 16px; }
+  .form-group label {
+    font-size: 12px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.05em; color: var(--gray-muted);
+  }
+  .form-group input {
+    padding: 9px 13px; border: 1px solid var(--gray-border);
+    border-radius: var(--radius-sm); font-size: 14px;
+    color: var(--gray-text); outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .form-group input:focus {
+    border-color: var(--blue-mid);
+    box-shadow: 0 0 0 3px rgba(55,138,221,0.12);
+  }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 18px; border-radius: var(--radius-sm);
+    font-size: 13.5px; font-weight: 500;
+    text-decoration: none; border: none; cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn i { font-size: 16px; }
+  .btn-primary { background: var(--blue-main); color: #fff; }
+  .btn-primary:hover { background: var(--blue-dark); }
+  .btn-ghost { background: transparent; color: var(--gray-muted); border: 1px solid var(--gray-border); }
+  .btn-ghost:hover { background: var(--gray-bg); }
+  .btn-row { display: flex; gap: 10px; padding-top: 8px; }
+  .section-title {
+    font-size: 14px; font-weight: 600; color: var(--blue-dark);
+    margin-bottom: 18px; padding-bottom: 10px;
+    border-bottom: 0.5px solid var(--gray-border);
+    display: flex; align-items: center; gap: 8px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<form method="post">
+  {% csrf_token %}
+  <div class="form-card">
+    <div class="section-title"><i class="ti ti-book-plus"></i> নতুন Subject যোগ করুন</div>
+
+    <div class="form-group">
+      <label>Subject নাম</label>
+      <input type="text" name="name" placeholder="যেমন: পদার্থবিজ্ঞান" required autofocus>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>পূর্ণ নম্বর</label>
+        <input type="number" name="full_marks" value="100" min="1" required>
+      </div>
+      <div class="form-group">
+        <label>পাস নম্বর</label>
+        <input type="number" name="pass_marks" value="33" min="1" required>
+      </div>
+    </div>
+    <div class="form-group" style="display:flex; align-items:center; gap:12px;">
+      <input type="checkbox" id="is_optional" name="is_optional">
+      <label for="is_optional" style="margin:0; font-size:13px; color:var(--gray-text);">Optional Subject</label>
+    </div>
+    <div class="btn-row">
+      <button type="submit" class="btn btn-primary"><i class="ti ti-plus"></i> যোগ করুন</button>
+      <a href="{% url 'exams:exam_detail' exam.pk %}" class="btn btn-ghost">বাতিল</a>
+    </div>
+  </div>
+</form>
+{% endblock %}

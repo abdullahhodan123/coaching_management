@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+{% block title %}নম্বর এন্ট্রি{% endblock %}
+{% block page_title %}নম্বর এন্ট্রি — {{ exam.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 20px; border-radius: var(--radius-sm);
+    font-size: 13.5px; font-weight: 500;
+    text-decoration: none; border: none; cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn i { font-size: 16px; }
+  .btn-primary { background: var(--blue-main); color: #fff; }
+  .btn-primary:hover { background: var(--blue-dark); }
+  .btn-ghost { background: transparent; color: var(--gray-muted); border: 1px solid var(--gray-border); }
+  .btn-ghost:hover { background: var(--gray-bg); }
+
+  .exam-info-bar {
+    display: flex; flex-wrap: wrap; gap: 12px;
+    margin-bottom: 20px;
+  }
+  .info-chip {
+    display: flex; align-items: center; gap: 7px;
+    background: var(--white); border: 0.5px solid var(--gray-border);
+    border-radius: var(--radius-sm); padding: 7px 13px;
+    font-size: 13px; color: var(--gray-text);
+  }
+  .info-chip i { font-size: 15px; color: var(--blue-mid); }
+
+  .table-wrap {
+    background: var(--white); border: 0.5px solid var(--gray-border);
+    border-radius: var(--radius); overflow: auto;
+    margin-bottom: 20px;
+  }
+
+  table { width: 100%; border-collapse: collapse; min-width: 600px; }
+
+  th {
+    font-size: 11.5px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.05em; color: var(--gray-muted);
+    padding: 11px 14px; text-align: left;
+    border-bottom: 0.5px solid var(--gray-border);
+    background: var(--gray-bg); white-space: nowrap;
+  }
+  th.subject-th {
+    background: var(--blue-pale); color: var(--blue-dark);
+    text-align: center;
+  }
+  th.optional-th {
+    background: #fff8f0; color: var(--gray-text);  /* optional আলাদা রং */
+  }
+
+  td { padding: 8px 14px; border-bottom: 0.5px solid var(--gray-border); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--gray-bg); }  /* ✅ row hover */
+
+  .student-name { font-size: 13.5px; font-weight: 500; color: var(--gray-text); white-space: nowrap; }
+
+  .mark-input {
+    width: 80px; padding: 6px 10px;
+    border: 1px solid var(--gray-border);
+    border-radius: var(--radius-sm);
+    font-size: 13.5px; text-align: center;
+    color: var(--gray-text); background: var(--white);
+    outline: none; transition: border-color 0.15s, box-shadow 0.15s;
+    display: block; margin: 0 auto;
+  }
+  .mark-input:focus {
+    border-color: var(--blue-mid);
+    box-shadow: 0 0 0 3px rgba(55,138,221,0.12);
+  }
+  .mark-input.is-over {   /* ✅ full_marks এর বেশি হলে লাল */
+    border-color: #e53e3e;
+    box-shadow: 0 0 0 3px rgba(229,62,62,0.12);
+  }
+
+  .full-marks-label {
+    font-size: 11px; color: var(--gray-muted);
+    text-align: center; margin-top: 3px;
+  }
+  .optional-badge {
+    display: inline-block; font-size: 9.5px; font-weight: 700;
+    color: #c05621; background: #feebcb;
+    border-radius: 4px; padding: 1px 5px; margin-top: 3px;
+    text-transform: uppercase; letter-spacing: 0.04em;
+  }
+
+  .form-actions {
+    display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+    padding: 20px; background: var(--white);
+    border: 0.5px solid var(--gray-border);
+    border-radius: var(--radius);
+  }
+
+  .tip {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12.5px; color: var(--gray-muted);
+    background: var(--blue-pale); border: 0.5px solid var(--blue-light);
+    border-radius: var(--radius-sm); padding: 10px 14px;
+    margin-bottom: 16px;
+  }
+  .tip i { font-size: 15px; color: var(--blue-mid); flex-shrink: 0; }
+</style>
+{% endblock %}
+
+{% block content %}
+<form method="post" id="markForm">
+  {% csrf_token %}
+
+  <div class="exam-info-bar">
+    <div class="info-chip"><i class="ti ti-file-description"></i> {{ exam.name }}</div>
+    <div class="info-chip"><i class="ti ti-users"></i> {{ exam.classroom.name }}</div>
+    <div class="info-chip"><i class="ti ti-calendar"></i> {{ exam.date|date:"d M Y" }}</div>
+    <div class="info-chip"><i class="ti ti-books"></i> {{ subjects|length }} বিষয়</div>
+    <div class="info-chip"><i class="ti ti-user-check"></i> {{ students|length }} শিক্ষার্থী</div>
+  </div>
+
+  <div class="tip">
+    <i class="ti ti-info-circle"></i>
+    প্রতিটি ঘরে নম্বর লিখুন। <strong>Enter</strong> বা <strong>Tab</strong> চেপে পরের ঘরে যান। সব শেষে "সেভ করুন" চাপুন।
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>শিক্ষার্থীর নাম</th>
+          {% for subject in subjects %}
+          <th class="subject-th {% if subject.is_optional %}optional-th{% endif %}">
+            {{ subject.name }}
+            {% if subject.is_optional %}
+              <div><span class="optional-badge">Optional</span></div>
+            {% endif %}
+            <span style="font-weight:400; font-size:10px; display:block; margin-top:2px;">
+              / {{ subject.full_marks }}
+            </span>
+          </th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for student in students %}
+        <tr>
+          <td style="color:var(--gray-muted); font-size:12.5px;">{{ forloop.counter }}</td>
+          <td><div class="student-name">{{ student.full_name }}</div></td>
+          {% for subject in subjects %}
+          <td>
+            <input
+              type="number"
+              class="mark-input"
+              name="marks_{{ student.pk }}_{{ subject.pk }}"
+              data-max="{{ subject.full_marks }}"
+              min="0"
+              max="{{ subject.full_marks }}"
+              step="0.5"
+              placeholder="—"
+            >
+            <div class="full-marks-label">/ {{ subject.full_marks }}</div>
+          </td>
+          {% endfor %}
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="{{ subjects|length|add:2 }}"
+              style="text-align:center; color:var(--gray-muted); padding:40px;">
+            <i class="ti ti-mood-empty" style="font-size:32px; display:block; margin-bottom:8px;"></i>
+            এই classroom-এ কোনো approved student নেই।
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary">
+      <i class="ti ti-device-floppy"></i> সেভ করুন ও Result তৈরি করুন
+    </button>
+    <a href="{% url 'exams:exam_detail' exam.pk %}" class="btn btn-ghost">
+      <i class="ti ti-x"></i> বাতিল
+    </a>
+  </div>
+</form>
+
+<script>
+  // ── ১. Existing নম্বর fill করো ──────────────────────────────
+  const existing = {
+    {% for result in existing_results %}
+      {% for entry in result.mark_entries.all %}
+        "marks_{{ result.student_id }}_{{ entry.subject_id }}": "{{ entry.marks_obtained }}",
+      {% endfor %}
+    {% endfor %}
+  };
+
+  const allInputs = Array.from(document.querySelectorAll('input.mark-input'));
+
+  allInputs.forEach(input => {
+    const val = existing[input.name];
+    if (val) input.value = val;
+  });
+
+  // ── ২. Enter key দিয়ে পরের ঘরে যাও (Tab এর মতো) ────────────
+  allInputs.forEach((input, idx) => {
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const next = allInputs[idx + 1];
+        if (next) next.focus();
+      }
+    });
+  });
+
+  // ── ৩. Full marks এর বেশি হলে লাল দেখাও ────────────────────
+  allInputs.forEach(input => {
+    input.addEventListener('input', () => {
+      const max = parseFloat(input.dataset.max);
+      const val = parseFloat(input.value);
+      input.classList.toggle('is-over', val > max);
+    });
+  });
+
+  // ── ৪. Submit এর আগে over-limit check করো ──────────────────
+  document.getElementById('markForm').addEventListener('submit', e => {
+    const overInputs = allInputs.filter(i => i.classList.contains('is-over'));
+    if (overInputs.length > 0) {
+      e.preventDefault();
+      overInputs[0].focus();
+      alert(`কিছু নম্বর সর্বোচ্চ সীমার বেশি! লাল ঘরগুলো ঠিক করুন।`);
+    }
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,574 @@
+{% extends "base.html" %}
+{% block title %}
+  {% if is_own %}My Dashboard{% else %}{{ student.full_name }} — Report{% endif %}
+{% endblock %}
+{% block page_title %}
+  {% if is_own %}Dashboard{% else %}{{ student.full_name }} — Report{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  .rp-wrap   { max-width: 1000px; margin: 0 auto; }
+  .rp-grid2  { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  .rp-grid3  { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 20px; }
+  .rp-grid4  { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 20px; }
+
+  .rp-card {
+    background: var(--white);
+    border: 0.5px solid var(--gray-border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .rp-card-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 18px;
+    border-bottom: 0.5px solid var(--gray-border);
+    background: var(--gray-bg);
+  }
+  .rp-card-head-title {
+    font-size: 13.5px; font-weight: 600;
+    color: var(--gray-text);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .rp-card-head-title i { font-size: 17px; color: var(--blue-main); }
+  .rp-card-body { padding: 18px; }
+
+  /* stat boxes */
+  .rp-stat {
+    background: var(--gray-bg);
+    border: 0.5px solid var(--gray-border);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    text-align: center;
+  }
+  .rp-stat-val  { font-size: 26px; font-weight: 600; color: var(--gray-text); line-height: 1.2; }
+  .rp-stat-lbl  { font-size: 11.5px; color: var(--gray-muted); margin-top: 3px; }
+  .rp-stat.blue  .rp-stat-val { color: var(--blue-main); }
+  .rp-stat.green .rp-stat-val { color: var(--green-text); }
+  .rp-stat.red   .rp-stat-val { color: var(--red-text); }
+  .rp-stat.amber .rp-stat-val { color: var(--amber-text); }
+
+  /* profile header */
+  .rp-profile {
+    display: flex; align-items: center; gap: 18px;
+    padding: 20px 18px;
+    border-bottom: 0.5px solid var(--gray-border);
+  }
+  .rp-avatar {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: var(--blue-pale); color: var(--blue-dark);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: 700;
+    border: 2px solid var(--blue-light); flex-shrink: 0;
+  }
+  .rp-profile-name  { font-size: 18px; font-weight: 600; color: var(--gray-text); }
+  .rp-profile-sub   { font-size: 13px; color: var(--gray-muted); margin-top: 3px; }
+
+  /* filter bar */
+  .rp-filter {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 20px; flex-wrap: wrap;
+  }
+  .rp-filter label { font-size: 13px; color: var(--gray-muted); }
+  .rp-filter input[type=number] {
+    width: 70px; padding: 6px 10px; border-radius: var(--radius-sm);
+    border: 0.5px solid var(--gray-border); font-size: 13.5px;
+    background: var(--white); color: var(--gray-text);
+  }
+  .rp-filter button, .rp-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 16px; border-radius: var(--radius-sm);
+    border: 0.5px solid var(--blue-main);
+    background: var(--blue-main); color: #fff;
+    font-size: 13px; font-weight: 500; cursor: pointer;
+    text-decoration: none; transition: background 0.15s;
+  }
+  .rp-filter button:hover, .rp-btn:hover { background: var(--blue-dark); border-color: var(--blue-dark); }
+  .rp-btn-outline {
+    background: var(--white); color: var(--blue-main);
+  }
+  .rp-btn-outline:hover { background: var(--blue-pale); }
+
+  /* back link */
+  .rp-back {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 13px; color: var(--blue-main);
+    text-decoration: none; margin-bottom: 18px;
+  }
+  .rp-back:hover { color: var(--blue-dark); }
+
+  /* table */
+  .rp-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  .rp-table th {
+    padding: 10px 14px; text-align: left;
+    font-size: 11.5px; font-weight: 500; text-transform: uppercase;
+    letter-spacing: .06em; color: var(--gray-muted);
+    background: var(--gray-bg);
+    border-bottom: 0.5px solid var(--gray-border);
+  }
+  .rp-table td {
+    padding: 11px 14px; color: var(--gray-text);
+    border-bottom: 0.5px solid var(--gray-border);
+    vertical-align: middle;
+  }
+  .rp-table tr:last-child td { border-bottom: none; }
+  .rp-table tbody tr:hover   { background: var(--blue-pale); }
+
+  /* badges */
+  .badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 10px; border-radius: 999px;
+    font-size: 12px; font-weight: 500;
+  }
+  .badge-green  { background: var(--green-bg);  color: var(--green-text);  border: 0.5px solid var(--green-border); }
+  .badge-red    { background: var(--red-bg);    color: var(--red-text);    border: 0.5px solid var(--red-border); }
+  .badge-blue   { background: var(--blue-pale); color: var(--blue-dark);   border: 0.5px solid var(--blue-light); }
+  .badge-amber  { background: var(--amber-bg);  color: var(--amber-text);  border: 0.5px solid var(--amber-border); }
+  .badge-best   { background: var(--green-bg);  color: var(--green-text);  border: 0.5px solid var(--green-border); font-size: 11px; }
+  .badge-weak   { background: var(--red-bg);    color: var(--red-text);    border: 0.5px solid var(--red-border);   font-size: 11px; }
+
+  /* progress bar */
+  .rp-bar-wrap { background: var(--gray-border); border-radius: 999px; height: 7px; overflow: hidden; }
+  .rp-bar      { height: 100%; border-radius: 999px; transition: width .4s; }
+  .bar-green   { background: var(--green-text); }
+  .bar-amber   { background: var(--amber-text); }
+  .bar-red     { background: var(--red-text); }
+
+  /* exam card */
+  .rp-exam-card {
+    border: 0.5px solid var(--gray-border);
+    border-radius: var(--radius-sm);
+    margin-bottom: 14px; overflow: hidden;
+  }
+  .rp-exam-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 11px 16px; background: var(--gray-bg);
+    border-bottom: 0.5px solid var(--gray-border); cursor: pointer;
+    user-select: none;
+  }
+  .rp-exam-head-left { display: flex; flex-direction: column; gap: 2px; }
+  .rp-exam-title { font-size: 14px; font-weight: 600; color: var(--gray-text); }
+  .rp-exam-meta  { font-size: 12px; color: var(--gray-muted); }
+  .rp-exam-stats { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .rp-exam-body  { padding: 14px 16px; display: none; }
+  .rp-exam-body.open { display: block; }
+  .rp-chevron { transition: transform 0.2s; font-size: 18px; color: var(--gray-muted); }
+  .rp-chevron.open { transform: rotate(180deg); }
+
+  /* attendance dots */
+  .att-dots { display: flex; flex-wrap: wrap; gap: 5px; }
+  .att-dot  {
+    width: 28px; height: 28px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 600;
+    cursor: default;
+  }
+  .att-dot.present { background: var(--green-bg);  color: var(--green-text); border: 0.5px solid var(--green-border); }
+  .att-dot.absent  { background: var(--red-bg);    color: var(--red-text);   border: 0.5px solid var(--red-border); }
+  .att-dot.late    { background: var(--amber-bg);  color: var(--amber-text); border: 0.5px solid var(--amber-border); }
+
+  /* payment pill */
+  .pay-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 12px; border-radius: 999px; font-size: 12.5px; font-weight: 500;
+  }
+  .pay-pill.paid   { background: var(--green-bg); color: var(--green-text); border: 0.5px solid var(--green-border); }
+  .pay-pill.unpaid { background: var(--red-bg);   color: var(--red-text);   border: 0.5px solid var(--red-border); }
+
+  @media (max-width: 768px) {
+    .rp-grid2, .rp-grid3, .rp-grid4 { grid-template-columns: 1fr 1fr; }
+    .rp-profile { flex-direction: column; align-items: flex-start; }
+  }
+  @media (max-width: 480px) {
+    .rp-grid2, .rp-grid3, .rp-grid4 { grid-template-columns: 1fr; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="rp-wrap">
+
+  {% if not is_own %}
+  <a href="javascript:history.back()" class="rp-back">
+    <i class="ti ti-arrow-left"></i> Back
+  </a>
+  {% endif %}
+
+  <!-- ── Profile Header ── -->
+  <div class="rp-card" style="margin-bottom:20px;">
+    <div class="rp-profile">
+      <div class="rp-avatar">{{ student.full_name|slice:":2"|upper }}</div>
+      <div>
+        <div class="rp-profile-name">{{ student.full_name }}</div>
+        <div class="rp-profile-sub">
+          <i class="ti ti-door" style="font-size:13px;"></i> {{ student.classroom.name }}
+          &nbsp;·&nbsp;
+          <i class="ti ti-school" style="font-size:13px;"></i> {{ student.school_name }}
+          &nbsp;·&nbsp;
+          <i class="ti ti-user" style="font-size:13px;"></i> {{ student.user.username }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Filter ── -->
+  <form method="get" class="rp-filter">
+    <label>Last</label>
+    <input type="number" name="last" value="{{ last_n }}" min="1" max="50">
+    <label>exams</label>
+    <button type="submit"><i class="ti ti-refresh"></i> Update</button>
+    {% if actual_count == 0 %}
+    <span style="font-size:13px; color:var(--red-text);">No results found.</span>
+    {% endif %}
+  </form>
+
+  <!-- ── Attendance Overview ── -->
+  <div class="rp-card">
+    <div class="rp-card-head">
+      <div class="rp-card-head-title">
+        <i class="ti ti-calendar-check"></i> Attendance Overview
+      </div>
+      <span class="badge badge-blue">{{ attendance.pct }}% present</span>
+    </div>
+    <div class="rp-card-body">
+      <div class="rp-grid4" style="margin-bottom:18px;">
+        <div class="rp-stat">
+          <div class="rp-stat-val blue">{{ attendance.total }}</div>
+          <div class="rp-stat-lbl">Total Classes</div>
+        </div>
+        <div class="rp-stat">
+          <div class="rp-stat-val green">{{ attendance.present }}</div>
+          <div class="rp-stat-lbl">Present</div>
+        </div>
+        <div class="rp-stat">
+          <div class="rp-stat-val red">{{ attendance.absent }}</div>
+          <div class="rp-stat-lbl">Absent</div>
+        </div>
+        <div class="rp-stat">
+          <div class="rp-stat-val amber">{{ attendance.late }}</div>
+          <div class="rp-stat-lbl">Late</div>
+        </div>
+      </div>
+
+      <!-- Progress bar -->
+      <div style="margin-bottom:18px;">
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--gray-muted);margin-bottom:5px;">
+          <span>Attendance Rate</span><span>{{ attendance.pct }}%</span>
+        </div>
+        <div class="rp-bar-wrap">
+          <div class="rp-bar {% if attendance.pct >= 75 %}bar-green{% elif attendance.pct >= 50 %}bar-amber{% else %}bar-red{% endif %}"
+               style="width:{{ attendance.pct }}%;"></div>
+        </div>
+      </div>
+
+      <!-- Recent 30 days dots -->
+      {% if attendance.recent %}
+      <div style="font-size:12px;color:var(--gray-muted);margin-bottom:8px;">Recent attendance (last 30 records)</div>
+      <div class="att-dots">
+        {% for a in attendance.recent %}
+        <div class="att-dot {{ a.status }}" title="{{ a.date }} — {{ a.status }}">
+          {{ a.date.day }}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- Monthly breakdown -->
+      {% if attendance.monthly %}
+      <div style="margin-top:20px;">
+        <div style="font-size:12px;color:var(--gray-muted);margin-bottom:10px;font-weight:600;">Monthly Breakdown</div>
+        <table class="rp-table">
+          <thead>
+            <tr>
+              <th>Month</th>
+              <th>Total</th>
+              <th>Present</th>
+              <th>Absent</th>
+              <th>Late</th>
+              <th>Rate</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for m in attendance.monthly %}
+            <tr>
+              <td>{{ m.label }}</td>
+              <td>{{ m.total }}</td>
+              <td><span class="badge badge-green">{{ m.present }}</span></td>
+              <td><span class="badge badge-red">{{ m.absent }}</span></td>
+              <td><span class="badge badge-amber">{{ m.late }}</span></td>
+              <td>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <div class="rp-bar-wrap" style="width:80px;">
+                    <div class="rp-bar {% if m.pct >= 75 %}bar-green{% elif m.pct >= 50 %}bar-amber{% else %}bar-red{% endif %}"
+                         style="width:{{ m.pct }}%;"></div>
+                  </div>
+                  <span style="font-size:12px;">{{ m.pct }}%</span>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ── Exam Results Overview ── -->
+  {% if overall %}
+  <div class="rp-card">
+    <div class="rp-card-head">
+      <div class="rp-card-head-title">
+        <i class="ti ti-chart-bar"></i> Exam Performance — Last {{ actual_count }} Exam
+      </div>
+    </div>
+    <div class="rp-card-body">
+      <div class="rp-grid4" style="margin-bottom:18px;">
+        <div class="rp-stat">
+          <div class="rp-stat-val blue">{{ overall.avg_pct }}%</div>
+          <div class="rp-stat-lbl">Avg Percentage</div>
+        </div>
+        <div class="rp-stat">
+          <div class="rp-stat-val">{{ overall.avg_gpa }}</div>
+          <div class="rp-stat-lbl">Avg GPA</div>
+        </div>
+        <div class="rp-stat">
+          <div class="rp-stat-val green">{{ overall.best }}%</div>
+          <div class="rp-stat-lbl">Best Exam</div>
+        </div>
+        <div class="rp-stat">
+          <div class="rp-stat-val red">{{ overall.worst }}%</div>
+          <div class="rp-stat-lbl">Worst Exam</div>
+        </div>
+      </div>
+      <div class="rp-grid2">
+        <div class="rp-stat">
+          <div class="rp-stat-val green">{{ overall.passed }}</div>
+          <div class="rp-stat-lbl">Exams Passed</div>
+        </div>
+        <div class="rp-stat">
+          <div class="rp-stat-val red">{{ overall.failed }}</div>
+          <div class="rp-stat-lbl">Exams Failed</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ── Subject Analysis ── -->
+  {% if subject_analysis %}
+  <div class="rp-card">
+    <div class="rp-card-head">
+      <div class="rp-card-head-title">
+        <i class="ti ti-books"></i> Subject-wise Analysis
+        <span style="font-size:12px; font-weight:400; color:var(--gray-muted);">
+          — last {{ actual_count }} exam এর উপর ভিত্তি করে
+        </span>
+      </div>
+      {% if best_subject %}
+      <span style="font-size:12px;color:var(--gray-muted);">
+        Best: <strong style="color:var(--green-text);">{{ best_subject.subject }}</strong>
+        &nbsp;·&nbsp;
+        Needs work: <strong style="color:var(--red-text);">{{ worst_subject.subject }}</strong>
+      </span>
+      {% endif %}
+    </div>
+    <div class="rp-card-body" style="padding:0;">
+      <table class="rp-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Subject</th>
+            <th>Avg %</th>
+            <th>Best</th>
+            <th>Lowest</th>
+            <th>Exams</th>
+            <th>Progress</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in subject_analysis %}
+          <tr>
+            <td style="color:var(--gray-muted);font-size:12px;">{{ forloop.counter }}</td>
+            <td>
+              {{ s.subject }}
+              {% if best_subject.subject == s.subject %}
+                <span class="badge badge-best" style="margin-left:5px;">Best</span>
+              {% endif %}
+              {% if worst_subject.subject == s.subject and subject_analysis|length > 1 %}
+                <span class="badge badge-weak" style="margin-left:5px;">Needs Work</span>
+              {% endif %}
+            </td>
+            <td><strong>{{ s.avg }}%</strong></td>
+            <td style="color:var(--green-text);">{{ s.high }}%</td>
+            <td style="color:var(--red-text);">{{ s.low }}%</td>
+            <td style="color:var(--gray-muted);">{{ s.count }}</td>
+            <td style="width:120px;">
+              <div class="rp-bar-wrap">
+                <div class="rp-bar {% if s.avg >= 60 %}bar-green{% elif s.avg >= 33 %}bar-amber{% else %}bar-red{% endif %}"
+                     style="width:{{ s.avg }}%;"></div>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ── Exam-by-exam Results (collapsible) ── -->
+  {% if results %}
+  <div class="rp-card">
+    <div class="rp-card-head">
+      <div class="rp-card-head-title">
+        <i class="ti ti-file-description"></i> Detailed Exam Results
+      </div>
+      <span style="font-size:12px;color:var(--gray-muted);">Click an exam to expand</span>
+    </div>
+    <div class="rp-card-body">
+      {% for result in results %}
+      <div class="rp-exam-card">
+        <div class="rp-exam-head" onclick="toggleExam(this)">
+          <div class="rp-exam-head-left">
+            <span class="rp-exam-title">{{ result.exam.name }}</span>
+            <span class="rp-exam-meta">
+              {{ result.exam.date }} &nbsp;·&nbsp; {{ result.exam.get_exam_type_display }}
+              {% if result.serial %}&nbsp;·&nbsp; Position #{{ result.serial }}{% endif %}
+            </span>
+          </div>
+          <div class="rp-exam-stats">
+            <span class="badge badge-blue">{{ result.percentage }}%</span>
+            <span class="badge badge-blue">GPA {{ result.gpa }}</span>
+            <span class="badge badge-blue">{{ result.letter_grade }}</span>
+            {% if result.is_failed %}
+              <span class="badge badge-red"><i class="ti ti-x"></i> Failed</span>
+            {% else %}
+              <span class="badge badge-green"><i class="ti ti-check"></i> Passed</span>
+            {% endif %}
+            <i class="ti ti-chevron-down rp-chevron"></i>
+          </div>
+        </div>
+        <div class="rp-exam-body">
+          <table class="rp-table">
+            <thead>
+              <tr>
+                <th>Subject</th>
+                <th>Obtained</th>
+                <th>Full Marks</th>
+                <th>Pass Marks</th>
+                <th>Percentage</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for entry in result.mark_entries.all %}
+              <tr>
+                <td>
+                  {{ entry.subject.name }}
+                  {% if entry.subject.is_optional %}
+                    <span class="badge badge-amber" style="font-size:11px;margin-left:4px;">Optional</span>
+                  {% endif %}
+                </td>
+                <td><strong>{{ entry.marks_obtained }}</strong></td>
+                <td style="color:var(--gray-muted);">{{ entry.subject.full_marks }}</td>
+                <td style="color:var(--gray-muted);">{{ entry.subject.pass_marks }}</td>
+                <td>{{ entry.percentage }}%</td>
+                <td>
+                  {% if entry.is_passed %}
+                    <span class="badge badge-green"><i class="ti ti-check"></i> Pass</span>
+                  {% else %}
+                    <span class="badge badge-red"><i class="ti ti-x"></i> Fail</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+            <tfoot>
+              <tr style="background:var(--gray-bg);">
+                <td><strong>Total</strong></td>
+                <td><strong>{{ result.total_marks }}</strong></td>
+                <td><strong>{{ result.total_full_marks }}</strong></td>
+                <td>—</td>
+                <td><strong>{{ result.percentage }}%</strong></td>
+                <td>
+                  {% if result.is_failed %}
+                    <span class="badge badge-red">Failed</span>
+                  {% else %}
+                    <span class="badge badge-green">Passed</span>
+                  {% endif %}
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% else %}
+  <div class="rp-card">
+    <div class="rp-card-body" style="text-align:center;padding:3rem;color:var(--gray-muted);">
+      <i class="ti ti-file-off" style="font-size:40px;display:block;margin-bottom:10px;"></i>
+      No exam results found yet.
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ── Payment History ── -->
+  <div class="rp-card">
+    <div class="rp-card-head">
+      <div class="rp-card-head-title">
+        <i class="ti ti-receipt"></i> Payment History
+      </div>
+    </div>
+    <div class="rp-card-body" style="padding:0;">
+      {% if payments %}
+      <table class="rp-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Month</th>
+            <th>Year</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in payments %}
+          <tr>
+            <td style="color:var(--gray-muted);font-size:12px;">{{ forloop.counter }}</td>
+            <td>{{ p.get_month_display }}</td>
+            <td>{{ p.year }}</td>
+            <td>
+              {% if p.is_paid %}
+                <span class="pay-pill paid"><i class="ti ti-circle-check"></i> Paid</span>
+              {% else %}
+                <span class="pay-pill unpaid"><i class="ti ti-circle-x"></i> Unpaid</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div style="text-align:center;padding:2.5rem;color:var(--gray-muted);">
+        <i class="ti ti-receipt-off" style="font-size:36px;display:block;margin-bottom:8px;"></i>
+        No payment records found.
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function toggleExam(head) {
+    const body    = head.nextElementSibling;
+    const chevron = head.querySelector('.rp-chevron');
+    const isOpen  = body.classList.contains('open');
+    body.classList.toggle('open', !isOpen);
+    chevron.classList.toggle('open', !isOpen);
+  }
+</script>
+{% endblock %}
