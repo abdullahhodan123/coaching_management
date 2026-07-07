@@ -13,6 +13,27 @@ class UserAdmin(BaseUserAdmin):
     list_filter = ['role', 'is_staff']
     search_fields = ['username', 'email']
 
+    ordering = ("username",)
+
+    fieldsets = BaseUserAdmin.fieldsets + (
+        (
+            "Additional Information",
+            {
+                "fields": ("role",),
+            },
+        ),
+    )
+
+    add_fieldsets = BaseUserAdmin.add_fieldsets + (
+        (
+            "Additional Information",
+            {
+                "fields": ("role",),
+            },
+        ),
+    )
+
+
 
 @admin.register(ClassRoom)
 class ClassRoomAdmin(admin.ModelAdmin):
